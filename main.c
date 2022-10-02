@@ -1,6 +1,8 @@
 rmSetStatusText("", 0.01);
 
-rmSetMapSize(200, 200);
+int size = 2*sqrt(cNumberNonGaiaPlayers * 2000);
+
+rmSetMapSize(size, size);
 
 rmTerrainInitialize("OlympusA",1);
 rmSetGaiaCiv(cCivGaia);

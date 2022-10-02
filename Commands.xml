@@ -3056,7 +3056,7 @@ Chats out the value of one of the trigger scratch variables.&#xD;
         <parameters type="string" name="parameter"/>
         <javadoc>Sets the specified configuration to false</javadoc>
     </method>
-    <method return="void" name="sqrt">
+    <method return="float" name="sqrt">
         <parameters type="float" name="x"/>
         <javadoc>Returns the square root of x.</javadoc>
     </method>
