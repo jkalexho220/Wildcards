@@ -30,7 +30,7 @@ import sys
 FILENAME = 'Wildcards.xs'
 rmsFunc = ''
 rmsMain = 'main.c'
-files = ['zshared.c', 'perlinNoise.c', 'setup.c']
+files = ['zshared.c', 'perlinNoise.c', 'initdb.c', 'setup.c', 'los.c', 'gameplayHelpers.c', 'buildMap.c']
 
 #########################################
 ####### CODE BELOW (DO NOT TOUCH) #######

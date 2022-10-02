@@ -880,6 +880,14 @@ int xGetPointer(int id = 0) {
 	return(aiPlanGetUserVariableInt(id,xMetadata,mPointer));
 }
 
+int xGetPrev(int id = 0) {
+	return(aiPlanGetUserVariableInt(id,xPrevBlock,xGetPointer(id)));
+}
+
+int xGetNext(int id = 0) {
+	return(aiPlanGetUserVariableInt(id,xNextBlock,xGetPointer(id)));
+}
+
 void xPrintAll(int id = 0, int index = 0) {
 	trChatSend(0, "<u>" + aiPlanGetName(id) + "</u>");
 	trChatSend(0, "size: " + xGetDatabaseCount(id));
