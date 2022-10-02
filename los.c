@@ -280,17 +280,49 @@ void cleanFrontier() {
 	*/
 }
 
+void modifyLOS(string proto = "", int p = 0) {
+	// HP
+	trModifyProtounit(proto, p, 0, 9999999999999999999.0);
+	trModifyProtounit(proto, p, 0, -9999999999999999999.0);
+	trModifyProtounit(proto, p, 0, 3.0);
+	// speed
+	trModifyProtounit(proto, p, 1, 9999999999999999999.0);
+	trModifyProtounit(proto, p, 1, -9999999999999999999.0);
+	trModifyProtounit(proto, p, 1, 5.0);
+	// LOS
+	trModifyProtounit(proto, p, 2, 9999999999999999999.0);
+	trModifyProtounit(proto, p, 2, -9999999999999999999.0);
+	trModifyProtounit(proto, p, 2, 3.0);
+}
+
 rule setup_los
 active
 highFrequency
 {
 	xsDisableSelf();
+	trSetUnitIdleProcessing(false);
+
+	gadgetUnreal("ScoreDisplay");
+	gadgetUnreal("GodPowers");
+	gadgetUnreal("tributedlg-sendButton");
+	gadgetUnreal("tributedlg-clearButton");
+	%
+	for(p=1; < cNumberNonGaiaPlayers) {
+		code("trStringQuestVarSet(\"p"+p+"name\", \""+rmGetPlayerName(p)+"\");");
+	}
+	%
+	
 	losDimension = mapSize / 2;
 	int dbName = 0;
 	int loc = 0;
 	int next = 0;
 	for(p=1; < cNumberPlayers) {
-		trModifyProtounit("Hoplite", p, 2, -99);
+		modifyLOS("Hoplite", p);
+		modifyLOS("Pharaoh of Osiris", p);
+		modifyLOS("Hero Greek Odysseus", p);
+		modifyLOS("Minotaur", p);
+		modifyLOS("Hero Greek Jason", p);
+		modifyLOS("Female", p);
 		trModifyProtounit("Revealer to Player", p, 2, 9999999999999999999.0);
 		trModifyProtounit("Revealer to Player", p, 2, -9999999999999999999.0);
 		trModifyProtounit("Revealer to Player", p, 2, 3.0);

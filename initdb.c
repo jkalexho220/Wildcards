@@ -7,9 +7,18 @@ int xPlayerLosStart = 0;
 int xPlayerLosDB = 0;
 int xPlayerLosFrontier = 0;
 
+int xPlayerProjSpawner = 0;
+int xPlayerSpotlight = 0;
+
 // los frontier
 int xFrontierX = 0;
 int xFrontierY = 0;
+
+int dSpyRequests = 0;
+int xSpyRequestProto = 0;
+int xSpyRequestDest = 0;
+int xSpyRequestScale = 0;
+int xSpyRequestAnim = 0;
 
 rule initDB
 active
@@ -24,6 +33,15 @@ highFrequency
 	xPlayerLosStart = xInitAddInt(dPlayerData, "losStart");
 	xPlayerLosDB = xInitAddInt(dPlayerData, "losDB");
 	xPlayerLosFrontier = xInitAddInt(dPlayerData, "losFrontier");
+
+	xPlayerProjSpawner = xInitAddInt(dPlayerData, "projSpawner");
+	xPlayerSpotlight = xInitAddInt(dPlayerData, "spotlight");
+
+	dSpyRequests = xInitDatabase("spyRequests", 32);
+	xSpyRequestProto = xInitAddInt(dSpyRequests, "proto");
+	xSpyRequestAnim = xInitAddInt(dSpyRequests, "anim");
+	xSpyRequestScale = xInitAddVector(dSpyRequests, "scale");
+	xSpyRequestDest = xInitAddVector(dSpyRequests, "dest");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

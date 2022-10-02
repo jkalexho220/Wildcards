@@ -21,5 +21,5 @@ highFrequency
 	for(p=1; < cNumberPlayers) {
 		spawnPlayer(p, vector(20,0,20));
 	}
-	xsEnableRule("track_los");
+	enableGameplayRules();
 }

@@ -1,6 +1,6 @@
 rmSetStatusText("", 0.01);
 
-int size = 2*sqrt(cNumberNonGaiaPlayers * 2000);
+int size = 2*sqrt(cNumberNonGaiaPlayers * 1200);
 
 rmSetMapSize(size, size);
 

@@ -36,16 +36,8 @@ float getPerlinNoise(int meta = 0, int x = 0, int y = 0, bool debug = false) {
 		for(j=0; <= 1) {
 			dir = pos - xsVectorSet(1.0 * granularity * i, 0, 1.0 * granularity * j);
 			zSetFloat(interpolation, 2 * i + j, dotProduct(dir, aiPlanGetUserVariableVector(db, baseX + i, baseY + j)));
-			if (debug) {
-				debugLog("dir: " + dir);
-				debugLog("corner: " + aiPlanGetUserVariableVector(db, baseX + i, baseY + j));
-				debugLog("DotProduct: " + dotProduct(dir, aiPlanGetUserVariableVector(db, baseX + i, baseY + j)));
-			}
 		}
 	}
 	total = interpolatePerlin(interpolatePerlin(zGetFloat(interpolation, 0), zGetFloat(interpolation, 1), interpolateY),interpolatePerlin(zGetFloat(interpolation, 2), zGetFloat(interpolation, 3), interpolateY), interpolateX);
-	if (debug) {
-		debugLog("Total: " + total);
-	}
 	return(total);
 }
