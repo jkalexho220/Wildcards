@@ -2,9 +2,6 @@
 code("int mapSize = " + 1*sqrt(MAP_SIZE_STATIC + cNumberNonGaiaPlayers * MAP_SIZE_DYNAMIC) + ";");
 %
 
-
-int spysearch = 0;
-
 int TERRAIN_WALL = 2;
 int TERRAIN_WALL_SUB = 1;
 
@@ -20,12 +17,6 @@ int TERRAIN_DIRT_SUB = 3;
 int TERRAIN_ROAD = 0;
 int TERRAIN_ROAD_SUB = 65;
 
-
-void enableGameplayRules() {
-	spysearch = trGetNextUnitScenarioNameNumber();
-	xsEnableRule("track_los");
-	xsEnableRule("spy_find");
-}
 
 rule immediate
 active
@@ -61,9 +52,11 @@ runImmediately
 		trPlayerGrantResources(p, "Wood", -999);
 		trPlayerGrantResources(p, "Gold", -999);
 		trPlayerGrantResources(p, "Favor", -999);
+
+		trModifyProtounit("Dwarf",p,55,4);
 	}
 
-	trModifyProtounit("Dwarf",1,55,4);
+	
 	trModifyProtounit("Phoenix Egg",1,55,4);
 	trTechSetStatus(0, 304, 4); // omniscience p0
 }
@@ -113,11 +106,15 @@ highFrequency
 		modifyPlayableProto("Female", p);
 
 		modifyBuildableProto("House", p);
-		//trModifyProtounit("House", p, 18, -1); // house grants 1 food
+		trModifyProtounit("House", p, 18, -1); // house grants 1 food
 		modifyBuildableProto("Granary", p);
-		//trModifyProtounit("Granary", p, 17, -1); // tower grants 1 wood
+		trModifyProtounit("Granary", p, 17, -1); // tower grants 1 wood
 		modifyBuildableProto("Storehouse", p);
-		//trModifyProtounit("Storehouse", p, 16, -1); // storehouse grants 1 gold
+		trModifyProtounit("Storehouse", p, 16, -1); // storehouse grants 1 gold
+
+		trModifyProtounit("Stymph Bird Feather", p, 1, 9999999999999999999.0);
+		trModifyProtounit("Stymph Bird Feather", p, 1, -9999999999999999999.0);
+		trModifyProtounit("Stymph Bird Feather", p, 1, 20.0);
 	}
 }
 

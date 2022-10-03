@@ -6,10 +6,11 @@ float interpolatePerlin(float start = 0, float end = 1, float percentage = 0) {
 
 int generatePerlinNoise(int size = 50, int granularity = 5) {
 	int db = aiPlanCreate("perlinNoise", 8);
-	int meta = zNewArray(mInt, 3, "perlinMeta");
+	int meta = zNewArray(mInt, 4, "perlinMeta");
 	zSetInt(meta, 0, db);
 	zSetInt(meta, 1, granularity);
 	zSetInt(meta, 2, zNewArray(mFloat, 4, "perlinInterpolation"));
+	zSetInt(meta, 3, size);
 	int dimension = 1 + size / granularity;
 	for(i=0; < dimension) {
 		aiPlanAddUserVariableVector(db,i,"perlin"+i,dimension);
@@ -42,6 +43,11 @@ float getPerlinNoise(int meta = 0, int x = 0, int y = 0) {
 	return(total);
 }
 
+bool coordinatesInPerlin(int meta = 0, int x = 0, int y = 0) {
+	int size = zGetInt(meta, 3);
+	return(x >= 0 && y >= 0 && x <= size && y <= size);
+}
+
 /*
 As though we were rolling a marble down a hill until it reaches below a certain height.
 
@@ -55,6 +61,7 @@ vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float he
 	float best = getPerlinNoise(meta, x, y);
 	float current = best + 1;
 	bool found = false;
+	vector temp = vector(0,0,0);
 	for(k=0; < 99) {
 		found = false;
 		float before = best;
@@ -64,13 +71,17 @@ vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float he
 				if ((xsVectorGetX(dir) * xsVectorGetX(prev) + xsVectorGetZ(dir) * xsVectorGetZ(prev) < 0) || (i * i + j * j == 0)) {
 					continue;
 				} else {
-					current = getPerlinNoise(meta, 0 + xsVectorGetX(pos) + xsVectorGetX(dir), 0 + xsVectorGetZ(pos) + xsVectorGetZ(dir));
-					if (current < best) {
-						best = current;
-						found = true;
-						choice = dir;
+					temp = pos + dir;
+					if (coordinatesInPerlin(meta, 0 + xsVectorGetX(temp), 0 + xsVectorGetZ(temp))) {
+						current = getPerlinNoise(meta, 0 + xsVectorGetX(temp), 0 + xsVectorGetZ(temp));
+						if (current < best) {
+							best = current;
+							found = true;
+							choice = dir;
+						}
+					} else {
+						debugLog("Off the map: " + 1*xsVectorGetX(temp) + ", " + 1*xsVectorGetZ(temp));
 					}
-					//dir = xsVectorSet(xsVectorGetZ(dir), 0, 0 - xsVectorGetX(dir));
 				}
 			}
 		}

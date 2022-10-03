@@ -74,6 +74,7 @@ highFrequency
 		trUnitTeleport(xsVectorGetX(startPos) + (xsVectorGetX(dir) * 3.0), 0, xsVectorGetZ(startPos) + (xsVectorGetZ(dir) * 3.0));
 		trSetUnitOrientation(dir, vector(0,1,0), true);
 		dir = rotationMatrix(dir, mCos, mSin);
+		pickUpWeapon(p, WEAPON_KNIFE, 5);
 	}
 }
 
@@ -82,9 +83,35 @@ inactive
 highFrequency
 {
 	xsDisableSelf();
-	enableGameplayRules();
+	spysearch = trGetNextUnitScenarioNameNumber();
+
+	xsEnableRule("track_los");
+	xsEnableRule("ysearch");
+	xsEnableRule("gameplay_always");
+
 	trSetFogAndBlackmap(true, false);
 	trCameraCut(vector(-46.464447,70.710701,-46.464447) + startPos, vector(0.5,-0.707107,0.5), vector(0.5,0.707107,0.5), vector(0.707107,0,-0.707107));
 
 	trSetCounterDisplay("(Q) Throw | (W) Switch | (E) Dash");
+}
+
+rule gameplay_always
+inactive
+highFrequency
+{
+	for(p=1; < cNumberPlayers) {
+		xSetPointer(dPlayerData, p);
+		if (trPlayerResourceCount(p, "food") > 0) {
+			trPlayerGrantResources(p, "food", -9999);
+			shootWeapon(p);
+		}
+		if (trPlayerResourceCount(p, "wood") > 0) {
+			trPlayerGrantResources(p, "wood", -9999);
+			switchWeapon(p);
+		}
+		if (trPlayerResourceCount(p, "gold") > 0) {
+			trPlayerGrantResources(p, "gold", -9999);
+			dash(p);
+		}
+	}
 }

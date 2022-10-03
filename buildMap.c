@@ -6,7 +6,7 @@ rule build_map
 inactive
 highFrequency
 {
-	trChangeTerrainHeight(0,0,mapSize+1,mapSize+1,0,false);
+	trChangeTerrainHeight(0,0,mapSize+1,mapSize+1,0.0,false);
 	perlin = generatePerlinNoise(mapSize, 10);
 	float noise = 0;
 	trPaintTerrain(0,0,mapSize,mapSize,TERRAIN_PRIMARY, TERRAIN_PRIMARY_SUB,false);
