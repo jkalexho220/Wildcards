@@ -1,0 +1,6 @@
+
+const int EVENT_BUILD_HOUSE = 0;
+const int EVENT_BUILD_GRANARY = 1;
+const int EVENT_BUILD_STOREHOUSE = 2;
+const int EVENT_REMOVE_CAM_TRACKS = 3;
+const int EVENT_BUILD_AT_CURSOR = 4;

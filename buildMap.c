@@ -26,24 +26,8 @@ highFrequency
 		}
 	}
 	
-	xsDisableSelf();
-
-	startPos = perlinRoll(perlin, mapSize / 2, mapSize / 2, 1, -10.0);
-
-	xsEnableRule("gameplay_start");
-
-	vector dir = vector(1,0,0);
-	float angle = 6.283185 / (cNumberPlayers - 1);
-	float mCos = xsCos(angle);
-	float mSin = xsSin(angle);
-	for(p=1; < cNumberPlayers) {
-		spawnPlayer(p, startPos);
-		trUnitSelectClear();
-		trUnitSelectByID(xGetInt(dPlayerData, xPlayerUnitID, p));
-		trUnitTeleport(xsVectorGetX(startPos) + (xsVectorGetX(dir) * 3.0), 0, xsVectorGetZ(startPos) + (xsVectorGetZ(dir) * 3.0));
-		trSetUnitOrientation(dir, vector(0,1,0), true);
-		dir = rotationMatrix(dir, mCos, mSin);
-	}
-
 	trPaintTerrain(0,0,0,0,trGetTerrainType(0,0),trGetTerrainSubType(0,0),true);
+	
+	xsDisableSelf();
+	xsEnableRule("gameplay_setup");
 }

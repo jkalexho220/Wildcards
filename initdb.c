@@ -9,8 +9,12 @@ int xPlayerLosFrontier = 0;
 
 int xPlayerCharacter = 0;
 int xPlayerPro = 0;
+
+
 int xPlayerProjSpawner = 0;
 int xPlayerSpotlight = 0;
+
+int xPlayerProto = 0;
 
 // los frontier
 int xFrontierX = 0;
@@ -21,6 +25,7 @@ int xSpyRequestProto = 0;
 int xSpyRequestDest = 0;
 int xSpyRequestScale = 0;
 int xSpyRequestAnim = 0;
+int xSpyRequestEvent = 0;
 
 rule initDB
 active
@@ -39,6 +44,8 @@ highFrequency
 	xPlayerPro = xInitAddInt(dPlayerData, "pro");
 	xPlayerCharacter = xInitAddInt(dPlayerData, "char");
 
+	xPlayerProto = xInitAddString(dPlayerData, "proto", "Hoplite");
+
 	xPlayerProjSpawner = xInitAddInt(dPlayerData, "projSpawner");
 	xPlayerSpotlight = xInitAddInt(dPlayerData, "spotlight");
 
@@ -47,6 +54,7 @@ highFrequency
 	xSpyRequestAnim = xInitAddInt(dSpyRequests, "anim");
 	xSpyRequestScale = xInitAddVector(dSpyRequests, "scale");
 	xSpyRequestDest = xInitAddVector(dSpyRequests, "dest");
+	xSpyRequestEvent = xInitAddInt(dSpyRequests, "event");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {
@@ -56,4 +64,5 @@ highFrequency
 		xAddDatabaseBlock(dPlayerData, true);
 		xSetInt(dPlayerData, xPlayerLosFrontier, db);
 	}
+	debugLog("InitDB done");
 }

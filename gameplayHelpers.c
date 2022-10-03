@@ -2,12 +2,13 @@
 /*
 Assumes that the target unit is already selected
 */
-void spyEffect(int proto = 0, int anim = 0, vector dest = vector(0,0,0), vector scale = vector(1,1,1)) {
+void spyEffect(int proto = 0, int anim = 0, vector dest = vector(0,0,0), vector scale = vector(1,1,1), int event = -1) {
 	int newest = xAddDatabaseBlock(dSpyRequests);
 	xSetInt(dSpyRequests, xSpyRequestProto, proto, newest);
 	xSetInt(dSpyRequests, xSpyRequestAnim, anim, newest);
 	xSetVector(dSpyRequests, xSpyRequestDest, dest, newest);
 	xSetVector(dSpyRequests, xSpyRequestScale, scale, newest);
+	xSetInt(dSpyRequests, xSpyRequestEvent, event, newest);
 	trTechInvokeGodPower(0, "spy", vector(0,0,0), vector(0,0,0));
 }
 
@@ -30,8 +31,6 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 }
 
 
-
-
 rule spy_find
 inactive
 highFrequency
@@ -50,6 +49,7 @@ highFrequency
 				trMutateSelected(xGetInt(dSpyRequests, xSpyRequestProto));
 				trSetSelectedScale(xsVectorGetX(scale),xsVectorGetY(scale),xsVectorGetZ(scale));
 				trUnitOverrideAnimation(xGetInt(dSpyRequests, xSpyRequestAnim),0,true,false,-1);
+				trEventFire(xGetInt(dSpyRequests, xSpyRequestEvent));
 				if (aiPlanSetUserVariableInt(1*xsVectorGetX(dest),1*xsVectorGetY(dest),1*xsVectorGetZ(dest),i) == false) {
 					debugLog("spy error N/A: " + 1*xsVectorGetX(dest) + "," + 1*xsVectorGetY(dest) + "," + 1*xsVectorGetZ(dest));
 				}
@@ -57,8 +57,6 @@ highFrequency
 			} else {
 				debugLog("Spy Buffer is empty");
 			}
-		} else {
-			debugLog(""+kbGetProtoUnitName(kbGetUnitBaseTypeID(id)));
 		}
 	}
 	spysearch = trGetNextUnitScenarioNameNumber();
