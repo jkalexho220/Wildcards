@@ -28,9 +28,9 @@ import sys
 ####### CUSTOMIZE THESE #######
 ###############################
 FILENAME = 'Wildcards.xs'
-rmsFunc = ''
+rmsFunc = 'rmsFunc.c'
 rmsMain = 'main.c'
-files = ['zshared.c', 'perlinNoise.c', 'initdb.c', 'setup.c', 'los.c', 'gameplayHelpers.c', 'buildMap.c']
+files = ['zshared.c', 'dataLoadBackend.c', 'perlinNoise.c', 'initdb.c', 'dataLoadModifyMe.c', 'setup.c', 'los.c', 'gameplayHelpers.c', 'buildMap.c', 'gameplay.c']
 
 #########################################
 ####### CODE BELOW (DO NOT TOUCH) #######

@@ -174,6 +174,8 @@ highFrequency
 
 	trLetterBox(true);
 	trUIFadeToColor(0,0,0,0,0,true);
+	ambientColor(0,0,0);
+	sunColor(0,0,0);
 
 	/*
 	The dSavedData database contains every requested piece of data. This is how
@@ -352,12 +354,13 @@ highFrequency
 	xsDisableSelf();
 	int slot = 0;
 	int currentdata = 0;
-
+	/*
 	for(i=0; < 32 * (cNumberPlayers - 1)) {
 		trUnitSelectClear();
 		trUnitSelectByID(i);
 		trUnitDestroy();
 	}
+	*/
 
 	loadAllDataMultiplayer();
 

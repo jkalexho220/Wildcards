@@ -7,6 +7,8 @@ int xPlayerLosStart = 0;
 int xPlayerLosDB = 0;
 int xPlayerLosFrontier = 0;
 
+int xPlayerCharacter = 0;
+int xPlayerPro = 0;
 int xPlayerProjSpawner = 0;
 int xPlayerSpotlight = 0;
 
@@ -33,6 +35,9 @@ highFrequency
 	xPlayerLosStart = xInitAddInt(dPlayerData, "losStart");
 	xPlayerLosDB = xInitAddInt(dPlayerData, "losDB");
 	xPlayerLosFrontier = xInitAddInt(dPlayerData, "losFrontier");
+
+	xPlayerPro = xInitAddInt(dPlayerData, "pro");
+	xPlayerCharacter = xInitAddInt(dPlayerData, "char");
 
 	xPlayerProjSpawner = xInitAddInt(dPlayerData, "projSpawner");
 	xPlayerSpotlight = xInitAddInt(dPlayerData, "spotlight");

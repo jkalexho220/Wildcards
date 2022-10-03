@@ -43,7 +43,7 @@ bool rayTrace(int fromX = 0, int fromY = 0, int toX = 0, int toY = 0) {
 				y = y - 1;
 			}
 		}
-		if (trGetTerrainType(x, y) == TERRAIN_WALL_PRIMARY) { // all cliffs are terrain primary 2, so we don't need to check secondary
+		if (trGetTerrainType(x, y) == TERRAIN_WALL) { // all cliffs are terrain primary 2, so we don't need to check secondary
 			return(false);
 		}
 	}
@@ -171,7 +171,7 @@ void addFrontier(int posX = 0, int posY = 0) {
 		index = losGridToIndex(x, y);
 		data = zGetInt(db, index);
 		if (nodeIsVisible(data) == false) {
-			if (trGetTerrainType(x * 2, y * 2) != TERRAIN_WALL_PRIMARY) {
+			if (trGetTerrainType(x * 2, y * 2) != TERRAIN_WALL) {
 				if (distanceBetweenCoordinates(x * 2, y * 2, posX, posY) < LOS_RADIUS) {
 					if (rayTrace(posX, posY, x * 2, y * 2)) {
 						data = LOS_FRONTIER_AND_VISIBLE; // node is visible and in the frontier
@@ -296,7 +296,7 @@ void modifyLOS(string proto = "", int p = 0) {
 }
 
 rule setup_los
-active
+inactive
 highFrequency
 {
 	xsDisableSelf();
@@ -345,6 +345,17 @@ highFrequency
 		xSetInt(dPlayerData, xPlayerLosStart, kbGetBlockID(""+xGetInt(dPlayerData, xPlayerLosStart)));
 		trArmyDispatch(""+p+",0","Victory Marker",1,1,0,1,0,true);
 	}
+
+	if (aiIsMultiplayer()) {
+		//  data load stuff
+		for(i=0; < 32 * (cNumberPlayers - 1)) {
+			trUnitSelectClear();
+			trUnitSelectByID(i);
+			trUnitDestroy();
+		}
+	}
+
+	xsEnableRule("Z_cin_00");
 }
 
 rule track_los

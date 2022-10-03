@@ -21,7 +21,7 @@ int generatePerlinNoise(int size = 50, int granularity = 5) {
 	return(meta);
 }
 
-float getPerlinNoise(int meta = 0, int x = 0, int y = 0, bool debug = false) {
+float getPerlinNoise(int meta = 0, int x = 0, int y = 0) {
 	int db = zGetInt(meta, 0);
 	int granularity = zGetInt(meta, 1);
 	int interpolation = zGetInt(meta, 2);
@@ -40,4 +40,52 @@ float getPerlinNoise(int meta = 0, int x = 0, int y = 0, bool debug = false) {
 	}
 	total = interpolatePerlin(interpolatePerlin(zGetFloat(interpolation, 0), zGetFloat(interpolation, 1), interpolateY),interpolatePerlin(zGetFloat(interpolation, 2), zGetFloat(interpolation, 3), interpolateY), interpolateX);
 	return(total);
+}
+
+/*
+As though we were rolling a marble down a hill until it reaches below a certain height.
+
+Returns a position in vector coordinates.
+*/
+vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float height = 0, bool debug = false) {
+	vector pos = xsVectorSet(x, 0, y);
+	vector dir = xsVectorSet(stepSize, 0, 0);
+	vector prev = vector(0,0,0);
+	vector choice = dir;
+	float best = getPerlinNoise(meta, x, y);
+	float current = best + 1;
+	bool found = false;
+	for(k=0; < 99) {
+		found = false;
+		float before = best;
+		for(i = -1; <= 1) {
+			for(j = -1; <= 1) {
+				dir = xsVectorSet(i * stepSize, 0, j * stepSize);
+				if ((xsVectorGetX(dir) * xsVectorGetX(prev) + xsVectorGetZ(dir) * xsVectorGetZ(prev) < 0) || (i * i + j * j == 0)) {
+					continue;
+				} else {
+					current = getPerlinNoise(meta, 0 + xsVectorGetX(pos) + xsVectorGetX(dir), 0 + xsVectorGetZ(pos) + xsVectorGetZ(dir));
+					if (current < best) {
+						best = current;
+						found = true;
+						choice = dir;
+					}
+					//dir = xsVectorSet(xsVectorGetZ(dir), 0, 0 - xsVectorGetX(dir));
+				}
+			}
+		}
+		if ((best < height) || (found == false)) {
+			// we reached a valley, or the threshold
+			debugLog("done");
+			break;
+		} else {
+			pos = pos + choice;
+			prev = choice;
+			if (debug) {
+				trArmyDispatch("1,0","Phoenix Egg",1,xsVectorGetX(pos)*2,0,xsVectorGetZ(pos)*2,0,true);
+			}
+		}
+	}
+	debugLog("best: " + best);
+	return(gridToVector(pos));
 }

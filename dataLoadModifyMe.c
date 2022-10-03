@@ -61,7 +61,7 @@ rule setup_data
 inactive
 highFrequency
 {
-	NEXT_TRIGGER_NAME = "startup"; // the next trigger to run after data load is complete
+	NEXT_TRIGGER_NAME = "setup_los"; // the next trigger to run after data load is complete
 	/*
 	Add data to slots here
 	
@@ -75,6 +75,8 @@ highFrequency
 	Slot 0
 	Total size: 0
 	*/
+	addSavedDataDB(dPlayerData, xPlayerPro, 0, 2);
+	addSavedDataDB(dPlayerData, xPlayerCharacter, 0, 16);
 
 	/*
 	Slot 1

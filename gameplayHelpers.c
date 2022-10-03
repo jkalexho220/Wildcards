@@ -1,9 +1,3 @@
-int spysearch = 0;
-
-void enableGameplayRules() {
-	xsEnableRule("track_los");
-	xsEnableRule("spy_find");
-}
 
 /*
 Assumes that the target unit is already selected
@@ -31,7 +25,7 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	cleanFrontier();
 
 	xUnitSelectByID(dPlayerData, xPlayerUnitID);
-	spyEffect("Cinematic Block", 0, xsVectorSet(dPlayerData, xPlayerProjSpawner, p));
+	spyEffect(kbGetProtoUnitID("Cinematic Block"), 0, xsVectorSet(dPlayerData, xPlayerProjSpawner, p));
 	xSetPointer(dPlayerData, old);
 }
 
@@ -42,7 +36,6 @@ rule spy_find
 inactive
 highFrequency
 {
-	int x = 0;
 	int id = 0;
 	vector scale = vector(0,0,0);
 	vector dest = vector(0,0,0);
@@ -64,6 +57,8 @@ highFrequency
 			} else {
 				debugLog("Spy Buffer is empty");
 			}
+		} else {
+			debugLog(""+kbGetProtoUnitName(kbGetUnitBaseTypeID(id)));
 		}
 	}
 	spysearch = trGetNextUnitScenarioNameNumber();
