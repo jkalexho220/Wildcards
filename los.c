@@ -92,7 +92,7 @@ void addToFrontier(int frontier = 0, int x = 0, int y = 0) {
 assume dPlayerData pointer is correct
 posX and posY are grid coordinates
 */
-void removeFrontier(int posX = 0, int posY = 0) {
+void removeFrontier(int posX = 0, int posY = 0, bool removeEverything = false) {
 	int frontier = xGetInt(dPlayerData, xPlayerLosFrontier);
 	int db = xGetInt(dPlayerData, xPlayerLosDB);
 	int start = xGetInt(dPlayerData, xPlayerLosStart);
@@ -110,7 +110,7 @@ void removeFrontier(int posX = 0, int posY = 0) {
 		y = xGetInt(frontier, xFrontierY);
 		index = losGridToIndex(x, y);
 		data = zGetInt(db, index);
-		if (rayTrace(posX, posY, x * 2, y * 2) == false || distanceBetweenCoordinates(posX, posY, x * 2, y * 2) > LOS_RADIUS) {
+		if (removeEverything || rayTrace(posX, posY, x * 2, y * 2) == false || distanceBetweenCoordinates(posX, posY, x * 2, y * 2) > LOS_RADIUS) {
 			index = losGridToIndex(x, y);
 			zSetInt(db, index, 0);
 			xFreeDatabaseBlock(frontier);

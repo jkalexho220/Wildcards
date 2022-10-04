@@ -5,6 +5,8 @@ const int WEAPON_CAMO = 4;
 const int WEAPON_TRAP = 5;
 const int WEAPON_PORTAL = 6;
 
+const int WEAPON_WILDCARD = 99;
+
 const int SHOOT_COOLDOWN = 500;
 const int INVENTORY_SIZE = 3;
 
@@ -35,6 +37,10 @@ string weaponName(int weapon = 0) {
 		case WEAPON_PORTAL:
 		{
 			name = "Portal Gun";
+		}
+		case WEAPON_WILDCARD:
+		{
+			name = "The Wildcard";
 		}
 	}
 	return(name);
@@ -68,6 +74,10 @@ void displayWeaponDetails(int weapon = 0) {
 		{
 			trChatSend(0, "Creates a portal through a wall.");
 		}
+		case WEAPON_WILDCARD:
+		{
+			trChatSend(0, "Whoever holds the Wildcard will be the Runner!");
+		}
 	}
 }
 
@@ -78,6 +88,10 @@ int weaponProto(int weapon = 0) {
 		case WEAPON_GRAPPLING_HOOK:
 		{
 			proto = kbGetProtoUnitID("Ballista");
+		}
+		case WEAPON_WILDCARD:
+		{
+			proto = kbGetProtoUnitID("Garrison Flag Sky Passage");
 		}
 	}
 	return(proto);

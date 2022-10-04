@@ -87,7 +87,6 @@ vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float he
 		}
 		if ((best < height) || (found == false)) {
 			// we reached a valley, or the threshold
-			debugLog("done");
 			break;
 		} else {
 			pos = pos + choice;
@@ -97,6 +96,5 @@ vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float he
 			}
 		}
 	}
-	debugLog("best: " + best);
 	return(gridToVector(pos));
 }

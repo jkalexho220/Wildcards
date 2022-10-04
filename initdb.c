@@ -17,6 +17,9 @@ int xPlayerDashCount = 0;
 int xPlayerDashCooldown = 0;
 int xPlayerDashStep = 0;
 
+int xPlayerPoints = 0;
+int xPlayerRespawnTime = 0;
+
 int xPlayerShootCooldown = 0;
 
 int xPlayerWeaponDatabase = 0;
@@ -65,6 +68,13 @@ int xCollectibleObject = 0;
 int xCollectibleType = 0;
 int xCollectibleCount = 0;
 
+int dGoldMines = 0;
+int xGoldMineObject = 0;
+int xGoldMineFlag = 0;
+int xGoldMineRevealer = 0;
+int xGoldMineHolder = 0;
+int xGoldMineCircle = 0;
+int xGoldMineValue = 0;
 
 int initGenericProj(string name = "", float radius = 0) {
 	int db = xInitDatabase(name);
@@ -96,6 +106,9 @@ highFrequency
 	xPlayerCharacter = xInitAddInt(dPlayerData, "char");
 
 	xPlayerProto = xInitAddString(dPlayerData, "proto", "Peltast");
+
+	xPlayerPoints = xInitAddInt(dPlayerData, "points", 0);
+	xPlayerRespawnTime = xInitAddInt(dPlayerData, "respawnTime");
 
 	xPlayerProjSpawner = xInitAddInt(dPlayerData, "projSpawner");
 	xPlayerSpotlight = xInitAddInt(dPlayerData, "spotlight");
@@ -136,6 +149,15 @@ highFrequency
 	xCollectibleType = xInitAddInt(dCollectibles, "type");
 	xInitAddVector(dCollectibles, "pos");
 	xCollectibleCount = xInitAddInt(dCollectibles, "count", 1);
+
+	dGoldMines = xInitDatabase("goldMines");
+	xGoldMineObject = xInitAddInt(dGoldMines, "object");
+	xGoldMineFlag = xInitAddInt(dGoldMines, "flag");
+	xGoldMineHolder = xInitAddInt(dGoldMines, "holder");
+	xInitAddVector(dGoldMines, "pos");
+	xGoldMineRevealer = xInitAddInt(dGoldMines, "revealer");
+	xGoldMineCircle = xInitAddInt(dGoldMines, "circle");
+	xGoldMineValue = xInitAddInt(dGoldMines, "value");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

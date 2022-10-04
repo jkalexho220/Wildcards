@@ -52,12 +52,12 @@ runImmediately
 		trPlayerGrantResources(p, "Wood", -999);
 		trPlayerGrantResources(p, "Gold", -999);
 		trPlayerGrantResources(p, "Favor", -999);
-
-		trModifyProtounit("Dwarf",p,55,4);
 	}
 
-	
-	trModifyProtounit("Phoenix Egg",1,55,4);
+	trModifyProtounit("Revealer", 0, 2, 9999999999999999999.0);
+	trModifyProtounit("Revealer", 0, 2, -9999999999999999999.0);
+	trModifyProtounit("Revealer", 0, 2, 5);
+	trModifyProtounit("Dwarf", 0, 55, 4);
 	trTechSetStatus(0, 304, 4); // omniscience p0
 }
 
@@ -121,6 +121,10 @@ highFrequency
 		trModifyProtounit("Stymph Bird Feather", p, 1, 9999999999999999999.0);
 		trModifyProtounit("Stymph Bird Feather", p, 1, -9999999999999999999.0);
 		trModifyProtounit("Stymph Bird Feather", p, 1, 20.0);
+
+		trModifyProtounit("Lancer Hero", p, 5, 99);
+
+		trModifyProtounit("Dwarf", p, 55, 4);
 	}
 }
 

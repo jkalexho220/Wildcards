@@ -1,4 +1,7 @@
 int spysearch = 0;
+int wildcard = -1;
+int wildcardStep = 0;
+int wildcardNext = 0;
 
 void reselectMyself() {
 	uiClearSelection();
@@ -10,6 +13,73 @@ void reselectMyself() {
 	trBlockAllSounds(false);
 	uiFindType(proto);
 	trackPlay(1,EVENT_REMOVE_CAM_TRACKS);
+}
+
+void overlayTextColor(int p = 0) {
+	switch(p)
+	{
+		case 1:
+		{
+			trOverlayTextColour(21, 21, 200);
+		}
+		case 2:
+		{
+			trOverlayTextColour(216, 21, 20);
+		}
+		case 3:
+		{
+			trOverlayTextColour(0, 125, 0);
+		}
+		case 4:
+		{
+			trOverlayTextColour(42, 195, 200);
+		}
+		case 5:
+		{
+			trOverlayTextColour(189, 43, 187);
+		}
+		case 6:
+		{
+			trOverlayTextColour(169, 166, 0);
+		}
+		case 7:
+		{
+			trOverlayTextColour(216, 50, 0);
+		}
+		case 8:
+		{
+			trOverlayTextColour(108, 50, 0);
+		}
+		case 9:
+		{
+			trOverlayTextColour(42, 212, 39);
+		}
+		case 10:
+		{
+			trOverlayTextColour(152, 209, 146);
+		}
+		case 11:
+		{
+			trOverlayTextColour(68, 66, 63);
+		}
+		case 12:
+		{
+			trOverlayTextColour(216, 0, 80);
+		}
+	}
+}
+
+void displayWildcardDetails() {
+	trOverlayText(trStringQuestVarGet("p"+wildcard+"name") + " - " + xGetInt(dPlayerData, xPlayerPoints, wildcard), 9999, 10, 12, 1600);
+}
+
+void earnPoints(int p = 0, int val = 0) {
+	xSetInt(dPlayerData, xPlayerPoints, xGetInt(dPlayerData, xPlayerPoints, p) + val, p);
+}
+
+
+bool targetEligible(int p = 0) {
+	return((p == wildcard) || (xGetInt(dUnits, xUnitOwner) == wildcard) || (xGetInt(dUnits, xUnitOwner) == 0));
 }
 
 /*
@@ -48,6 +118,9 @@ void addUnit(int name = 0, int id = 0, int p = 0) {
 void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	int old = xGetPointer(dPlayerData);
 	xSetPointer(dPlayerData, p);
+
+	xSetInt(dPlayerData, xPlayerDashCount, 2);
+
 	xSetInt(dPlayerData, xPlayerUnitName, trGetNextUnitScenarioNameNumber());
 	trArmyDispatch(""+p+",0", xGetString(dPlayerData, xPlayerProto), 1, xsVectorGetX(pos), 0, xsVectorGetZ(pos), 0, true);
 	xSetInt(dPlayerData, xPlayerUnitID, kbGetBlockID(""+xGetInt(dPlayerData, xPlayerUnitName), true));
@@ -57,6 +130,7 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	addUnit(xGetInt(dPlayerData, xPlayerUnitName), xGetInt(dPlayerData, xPlayerUnitID), p);
 	int x = xsVectorGetX(pos) / 4;
 	int y = xsVectorGetZ(pos) / 4;
+
 	addFrontier(x * 2, y * 2);
 	cleanFrontier();
 
@@ -164,6 +238,7 @@ void displayWeapons() {
 	for(i=3; >0) {
 		trCounterAbort("weapon"+i);
 	}
+	trClearCounterDisplay();
 	if (xGetDatabaseCount(db) > 0) {
 		bool first = true;
 		string name = "";
@@ -176,6 +251,9 @@ void displayWeapons() {
 			trCounterAddTime("weapon"+i,-1,-9999,name,-1);
 			xDatabaseNext(db);
 		}
+		if (xGetDatabaseCount(db) > 1) {
+			trSetCounterDisplay("(W) Switch Item");
+		}
 	}
 }
 
@@ -183,28 +261,40 @@ bool pickUpWeapon(int p = 0, int weapon = 0, int count = 0) {
 	xSetPointer(dPlayerData, p);
 	int db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
 	bool done = false;
-	for(i=xGetDatabaseCount(db); >0) {
-		xDatabaseNext(db);
-		if (xGetInt(db, xWeaponType) == weapon) {
-			xSetInt(db, xWeaponCount, count + xGetInt(db, xWeaponCount));
-			done = true;
-			break;
+	if (weapon == WEAPON_WILDCARD) {
+		done = true;
+		wildcard = p;
+		if (trCurrentPlayer() == p) {
+			trSoundPlayFN("herocreation.wav","1",-1,"","");
 		}
-	}
-	if (done == false) {
-		if (xGetDatabaseCount(db) < INVENTORY_SIZE) {
-			xAddDatabaseBlock(db, true);
-			xSetInt(db, xWeaponType, weapon);
-			xSetInt(db, xWeaponCount, count);
-			if (xGetDatabaseCount(db) == 1) {
-				xSetInt(dPlayerData, xPlayerWeaponCurrent, xGetPointer(db));
+		xUnitSelectByID(dPlayerData, xPlayerUnitID);
+		spyEffect(kbGetProtoUnitID("Garrison Flag Sky Passage"), -1, xsVectorSet(dPlayerData, xPlayerSpotlight, p));
+	} else {
+		xSetPointer(db, xGetInt(dPlayerData, xPlayerWeaponCurrent));
+		for(i=xGetDatabaseCount(db); >0) {
+			xDatabaseNext(db);
+			if (xGetInt(db, xWeaponType) == weapon) {
+				xSetInt(db, xWeaponCount, count + xGetInt(db, xWeaponCount));
+				done = true;
+				break;
 			}
-			done = true;
+		}
+		if (done == false) {
+			if (xGetDatabaseCount(db) < INVENTORY_SIZE) {
+				xAddDatabaseBlock(db, true);
+				xSetInt(db, xWeaponType, weapon);
+				xSetInt(db, xWeaponCount, count);
+				if (xGetDatabaseCount(db) == 1) {
+					xSetInt(dPlayerData, xPlayerWeaponCurrent, xGetPointer(db));
+				}
+				done = true;
+			}
+		}
+		if (trCurrentPlayer() == p) {
+			displayWeapons();
 		}
 	}
-	if (trCurrentPlayer() == p) {
-		displayWeapons();
-	}
+	
 	return(done);
 }
 
@@ -240,6 +330,9 @@ void shootWeapon(int p = 0) {
 				case WEAPON_KNIFE:
 				{
 					shootGenericProj(p, dKnives, "Stymph Bird Feather", xGetVector(dPlayerData, xPlayerThrowPos));
+					if (p == wildcard) {
+						trUnitHighlight(99.0, false);
+					}
 					trQuestVarSetFromRand("sound", 1, 5, true);
 					xUnitSelectByID(dPlayerData, xPlayerUnitID);
 					if (trUnitVisToPlayer()) {
