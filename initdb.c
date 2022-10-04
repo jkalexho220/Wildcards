@@ -24,6 +24,7 @@ int xPlayerShootCooldown = 0;
 
 int xPlayerWeaponDatabase = 0;
 int xPlayerWeaponCurrent = 0;
+int xPlayerWeaponTop = 0;
 
 int xPlayerProjSpawner = 0;
 int xPlayerSpotlight = 0;
@@ -120,6 +121,7 @@ highFrequency
 	xPlayerDashPos = xInitAddVector(dPlayerData, "dashPos");
 
 	xPlayerWeaponDatabase = xInitAddInt(dPlayerData, "weaponDatabase");
+	xPlayerWeaponTop = xInitAddInt(dPlayerData, "weaponTop");
 	xPlayerWeaponCurrent = xInitAddInt(dPlayerData, "weaponCurrent");
 
 	xPlayerShootCooldown = xInitAddInt(dPlayerData, "shootCooldown");

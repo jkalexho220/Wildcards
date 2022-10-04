@@ -98,8 +98,9 @@ highFrequency
 	trSetFogAndBlackmap(true, false);
 	trCameraCut(vector(-46.464447,70.710701,-46.464447) + startPos, vector(0.5,-0.707107,0.5), vector(0.5,0.707107,0.5), vector(0.707107,0,-0.707107));
 
-	displayWeapons();
-	displayDashCount();
+	for(p=1; < cNumberPlayers) {
+		displayWeapons(p);
+	}
 }
 
 rule gameplay_always
@@ -130,8 +131,8 @@ highFrequency
 				xClearDatabase(db);
 				xSetInt(dPlayerData, xPlayerDashStep, 0);
 				xSetInt(dPlayerData, xPlayerRespawnTime, trTimeMS() + 15000);
+				displayWeapons(p);
 				if (trCurrentPlayer() == p) {
-					displayWeapons();
 					trCounterAbort("dashes");
 					trCounterAddTime("respawn", 15, 1, "Respawn", -1);
 				}
@@ -154,9 +155,7 @@ highFrequency
 					{
 						if (xGetInt(dPlayerData, xPlayerDashCount) < 2) {
 							xSetInt(dPlayerData, xPlayerDashCooldown, trTimeMS() + 15000);
-							if (trCurrentPlayer() == p) {
-								displayDashCount();
-							}
+							displayWeapons(p);
 							xSetInt(dPlayerData, xPlayerDashStep, 1);
 						}
 					}
@@ -165,9 +164,7 @@ highFrequency
 						if (trTimeMS() > xGetInt(dPlayerData, xPlayerDashCooldown)) {
 							xSetInt(dPlayerData, xPlayerDashStep, 0);
 							xSetInt(dPlayerData, xPlayerDashCount, 1 + xGetInt(dPlayerData, xPlayerDashCount));
-							if (trCurrentPlayer() == p) {
-								displayDashCount();
-							}
+							displayWeapons(p);
 						}
 					}
 				}
@@ -200,9 +197,7 @@ highFrequency
 			if (trCurrentPlayer() == p) {
 				proto = xGetString(dPlayerData, xPlayerProto, p);
 				uiFindType(proto);
-				trSoundPlayFN("herorevive.wav","1",-1,"","");
-				displayWeapons();
-				displayDashCount();
+				trSoundPlayFN("herorevived.wav","1",-1,"","");
 			}
 		}
 	}

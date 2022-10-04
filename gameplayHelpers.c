@@ -239,33 +239,41 @@ void spawnCollectible(vector pos = vector(0,0,0), int type = 0, int count = 1) {
 Assume trCurrentPlayer() check has already been performed
 Assume dPlayerData pointer is already set
 */
-void displayWeapons() {
-	int db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
-	for(i=3; >0) {
-		trCounterAbort("weapon"+i);
-	}
-	trClearCounterDisplay();
-	if (xGetDatabaseCount(db) > 0) {
-		bool first = true;
-		string name = "";
-		for(i=xGetDatabaseCount(db); >0) {
-			name = weaponName(xGetInt(db, xWeaponType)) + " x" + xGetInt(db, xWeaponCount);
-			if (first) {
-				first = false;
-				name = "(Q) " + name;
+void displayWeapons(int p = 0) {
+	int db = xGetInt(dPlayerData, xPlayerWeaponDatabase, p);
+	xSetPointer(db, xGetInt(dPlayerData, xPlayerWeaponTop, p));
+	if (trCurrentPlayer() == p) {
+		trCounterAbort("dashes");
+		string msg = "(Q) Throw | (W) Switch | (E) Dash [";
+		int count = xGetInt(dPlayerData, xPlayerDashCount, p);
+		if (count < 2) {
+			int timediff = (xGetInt(dPlayerData, xPlayerDashCooldown, p) - trTimeMS()) / 1000;
+			trCounterAddTime("dashes",timediff,-1,msg + xGetInt(dPlayerData, xPlayerDashCount, p) + "/2]",-1);
+		} else {
+			trCounterAddTime("dashes",-1,-9999,msg + "2/2]",-1);
+		}
+
+		for(i=3; >0) {
+			trCounterAbort("weapon"+i);
+		}
+		if (xGetDatabaseCount(db) > 0) {
+			string name = "";
+			for(i=xGetDatabaseCount(db); >0) {
+				name = weaponName(xGetInt(db, xWeaponType)) + " x" + xGetInt(db, xWeaponCount);
+				if (xGetInt(dPlayerData, xPlayerWeaponCurrent, p) == xGetPointer(db)) {
+					name = "--> " + name;
+				}
+				trCounterAddTime("weapon"+i,-1,-9999,name,-1);
+				xDatabaseNext(db);
 			}
-			trCounterAddTime("weapon"+i,-1,-9999,name,-1);
-			xDatabaseNext(db);
-		}
-		if (xGetDatabaseCount(db) > 1) {
-			trSetCounterDisplay("(W) Switch Item");
 		}
 	}
+	xSetPointer(db, xGetInt(dPlayerData, xPlayerWeaponTop, p));
 }
 
 bool pickUpWeapon(int p = 0, int weapon = 0, int count = 0) {
 	if (weapon == WEAPON_KNIFE) {
-		knifeCount = knifeCount + 1;
+		knifeCount = knifeCount - 1;
 	}
 	xSetPointer(dPlayerData, p);
 	int db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
@@ -290,19 +298,18 @@ bool pickUpWeapon(int p = 0, int weapon = 0, int count = 0) {
 		}
 		if (done == false) {
 			if (xGetDatabaseCount(db) < INVENTORY_SIZE) {
+				xSetPointer(db, xGetInt(dPlayerData, xPlayerWeaponTop));
 				xAddDatabaseBlock(db, true);
 				xSetInt(db, xWeaponType, weapon);
 				xSetInt(db, xWeaponCount, count);
 				if (xGetDatabaseCount(db) == 1) {
+					xSetInt(dPlayerData, xPlayerWeaponTop, xGetPointer(db));
 					xSetInt(dPlayerData, xPlayerWeaponCurrent, xGetPointer(db));
 				}
 				done = true;
 			}
 		}
-		xSetPointer(db, xGetInt(dPlayerData, xPlayerWeaponCurrent));
-		if (trCurrentPlayer() == p) {
-			displayWeapons();
-		}
+		displayWeapons(p);
 	}
 	
 	return(done);
@@ -322,8 +329,8 @@ void switchWeapon(int p = 0) {
 	if (xGetDatabaseCount(db) > 0) {
 		xSetPointer(db, xGetInt(dPlayerData, xPlayerWeaponCurrent));
 		xSetInt(dPlayerData, xPlayerWeaponCurrent, xDatabaseNext(db));
+		displayWeapons(p);
 		if (trCurrentPlayer() == p) {
-			displayWeapons();
 			trSoundPlayFN("ui\jewel.wav","1",-1,"","");
 		}
 	}
@@ -353,24 +360,13 @@ void shootWeapon(int p = 0) {
 			xSetInt(db, xWeaponCount, xGetInt(db, xWeaponCount) - 1);
 			if (xGetInt(db, xWeaponCount) == 0) {
 				xFreeDatabaseBlock(db);
+				if (xGetInt(dPlayerData, xPlayerWeaponTop) == xGetInt(dPlayerData, xPlayerWeaponCurrent)) {
+					xSetInt(dPlayerData, xPlayerWeaponTop, xGetPointer(db));
+				}
 				xSetInt(dPlayerData, xPlayerWeaponCurrent, xGetPointer(db));
 			}
 		}
-		if (trCurrentPlayer() == p) {
-			displayWeapons();
-		}
-	}
-}
-
-void displayDashCount() {
-	trCounterAbort("dashes");
-	string msg = "(E) Dash [";
-	int count = xGetInt(dPlayerData, xPlayerDashCount);
-	if (count < 2) {
-		int timediff = (xGetInt(dPlayerData, xPlayerDashCooldown) - trTimeMS()) / 1000;
-		trCounterAddTime("dashes",timediff,0,msg + xGetInt(dPlayerData, xPlayerDashCount) + "/2]",-1);
-	} else {
-		trCounterAddTime("dashes",-1,-9999,msg + "2/2]",-1);
+		displayWeapons(p);
 	}
 }
 
@@ -406,9 +402,9 @@ void dash(int p = 0) {
 		trUnitSelectClear();
 		trUnitSelect(""+next, true);
 		trUnitChangeProtoUnit("Dust Medium");
+		displayWeapons(p);
 		if (trCurrentPlayer() == p) {
 			trSoundPlayFN("sphinxteleportout.wav","1",-1,"","");
-			displayDashCount();
 		}
 	}
 }
