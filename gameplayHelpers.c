@@ -3,6 +3,9 @@ int wildcard = -1;
 int wildcardStep = 0;
 int wildcardNext = 0;
 
+int knifeCount = 0;
+int nextCollectible = 0;
+
 void reselectMyself() {
 	uiClearSelection();
 	int p = trCurrentPlayer();
@@ -203,6 +206,9 @@ void shootGenericProj(int p = 0, int db = 0, string proto = "", vector dest = ve
 }
 
 void spawnCollectible(vector pos = vector(0,0,0), int type = 0, int count = 1) {
+	if (type == WEAPON_KNIFE) {
+		knifeCount = knifeCount + 1;
+	}
 	xAddDatabaseBlock(dCollectibles, true);
 	xSetInt(dCollectibles, xCollectiblePad, trGetNextUnitScenarioNameNumber());
 	trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
@@ -258,6 +264,9 @@ void displayWeapons() {
 }
 
 bool pickUpWeapon(int p = 0, int weapon = 0, int count = 0) {
+	if (weapon == WEAPON_KNIFE) {
+		knifeCount = knifeCount + 1;
+	}
 	xSetPointer(dPlayerData, p);
 	int db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
 	bool done = false;
@@ -290,6 +299,7 @@ bool pickUpWeapon(int p = 0, int weapon = 0, int count = 0) {
 				done = true;
 			}
 		}
+		xSetPointer(db, xGetInt(dPlayerData, xPlayerWeaponCurrent));
 		if (trCurrentPlayer() == p) {
 			displayWeapons();
 		}

@@ -111,6 +111,8 @@ highFrequency
 	int p = 0;
 	int val = 0;
 	int db = 0;
+	int x = 0;
+	int y = 0;
 	vector pos = vector(0,0,0);
 	vector prev = vector(0,0,0);
 	vector dir = vector(0,0,0);
@@ -127,11 +129,11 @@ highFrequency
 				db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
 				xClearDatabase(db);
 				xSetInt(dPlayerData, xPlayerDashStep, 0);
-				xSetInt(dPlayerData, xPlayerRespawnTime, trTimeMS() + 10000);
+				xSetInt(dPlayerData, xPlayerRespawnTime, trTimeMS() + 15000);
 				if (trCurrentPlayer() == p) {
 					displayWeapons();
 					trCounterAbort("dashes");
-					trCounterAddTime("respawn", 10, 1, "Respawn", -1);
+					trCounterAddTime("respawn", 15, 1, "Respawn", -1);
 				}
 				if (wildcard == p) {
 					trMessageSetText("The Wildcard has been dropped! Treasure locations have been reset!");
@@ -309,7 +311,7 @@ highFrequency
 		for(p=1; < cNumberPlayers) {
 			xSetPointer(dPlayerData, p);
 			if (xGetBool(dPlayerData, xPlayerAlive)) {
-				if (distanceBetweenVectors(xGetVector(dPlayerData, xPlayerPos), xGetVector(dCollectibles, xUnitPos)) < 10.0) {
+				if (distanceBetweenVectors(xGetVector(dPlayerData, xPlayerPos), xGetVector(dCollectibles, xUnitPos)) < 15.0) {
 					if (pickUpWeapon(p, xGetInt(dCollectibles, xCollectibleType), xGetInt(dCollectibles, xCollectibleCount))) { 
 						xUnitSelect(dCollectibles, xCollectibleObject);
 						trUnitChangeProtoUnit("Fireball Launch Damage Effect");
@@ -388,5 +390,21 @@ highFrequency
 		}
 	}
 
+	// spawn random items
+	if (((xGetDatabaseCount(dCollectibles) - knifeCount) < (cNumberPlayers + 6))) {
+		trQuestVarSetFromRand("rand", 1, mapSize, true);
+		x = trQuestVarGet("rand");
+		trQuestVarSetFromRand("rand", 1, mapSize, true);
+		y = trQuestVarGet("rand");
 
+		trQuestVarSetFromRand("rand", 1, 3, true);
+		val = trQuestVarGet("rand");
+		trQuestVarSetFromRand("rand", 1, 3, true);
+		if (trQuestVarGet("rand") < val) {
+			val = trQuestVarGet("rand");
+		}
+
+		trQuestVarSetFromRand("rand", 2, WEAPON_TYPES, true);
+		spawnCollectible(perlinRoll(perlin, x, y, 1.0, 0.5), 1*trQuestVarGet("rand"), val);
+	}
 }

@@ -43,6 +43,7 @@ runImmediately
 			trPlayerSetDiplomacy(x, p, "neutral");
 		}
 		trPlayerSetDiplomacy(0, p, "Enemy");
+		trPlayerSetDiplomacy(p, 0, "neutral");
 		trSetCivAndCulture(p, 1, 0);
 
 		trPlayerKillAllGodPowers(p);

@@ -1,9 +1,11 @@
 const int WEAPON_KNIFE = 1;
 const int WEAPON_GRAPPLING_HOOK = 2;
-const int WEAPON_SMOKE_BOMB = 3;
+const int WEAPON_PORTAL = 3;
 const int WEAPON_CAMO = 4;
 const int WEAPON_TRAP = 5;
-const int WEAPON_PORTAL = 6;
+const int WEAPON_SMOKE_BOMB = 6;
+
+const int WEAPON_TYPES = 6;
 
 const int WEAPON_WILDCARD = 99;
 
@@ -88,6 +90,22 @@ int weaponProto(int weapon = 0) {
 		case WEAPON_GRAPPLING_HOOK:
 		{
 			proto = kbGetProtoUnitID("Ballista");
+		}
+		case WEAPON_SMOKE_BOMB:
+		{
+			proto = kbGetProtoUnitID("Shade");
+		}
+		case WEAPON_CAMO:
+		{
+			proto = kbGetProtoUnitID("Audrey");
+		}
+		case WEAPON_PORTAL:
+		{
+			proto = kbGetProtoUnitID("Lampades");
+		}
+		case WEAPON_TRAP:
+		{
+			proto = kbGetProtoUnitID("Petrobolos");
 		}
 		case WEAPON_WILDCARD:
 		{
