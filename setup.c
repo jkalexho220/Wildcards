@@ -74,6 +74,11 @@ void modifyPlayableProto(string proto = "", int p = 0) {
 	trModifyProtounit(proto, p, 2, 9999999999999999999.0);
 	trModifyProtounit(proto, p, 2, -9999999999999999999.0);
 	trModifyProtounit(proto, p, 2, 3.0);
+	// armor
+	trModifyProtounit(proto, p, 24, -1);
+	trModifyProtounit(proto, p, 25, -1);
+	trModifyProtounit(proto, p, 26, -1);
+
 }
 
 void modifyBuildableProto(string proto = "", int p = 0) {

@@ -54,6 +54,13 @@ int xProjRadius = 0;
 
 int dKnives = 0;
 
+// collectibles
+int dCollectibles = 0;
+int xCollectiblePad = 0;
+int xCollectibleObject = 0;
+int xCollectibleType = 0;
+
+
 int initGenericProj(string name = "", float radius = 0) {
 	int db = xInitDatabase(name);
 	xInitAddInt(db, "name");
@@ -112,7 +119,13 @@ highFrequency
 	xUnitOwner = xInitAddInt(dUnits, "owner");
 	xUnitPos = xInitAddVector(dUnits, "pos");
 
-	dKnives = initGenericProj("knives", 2);
+	dKnives = initGenericProj("knives", 1.5);
+
+	dCollectibles = xInitDatabase("collectibles");
+	xCollectibleObject = xInitAddInt(dCollectibles, "object");
+	xCollectiblePad = xInitAddInt(dCollectibles, "pad");
+	xCollectibleType = xInitAddInt(dCollectibles, "type");
+	xInitAddVector(dCollectibles, "pos");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

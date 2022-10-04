@@ -12,6 +12,26 @@ void spyEffect(int proto = 0, int anim = 0, vector dest = vector(0,0,0), vector 
 	trTechInvokeGodPower(0, "spy", vector(0,0,0), vector(0,0,0));
 }
 
+bool rayCollision(int db = 0, vector start = vector(0,0,0), vector dir = vector(0,0,0), float dist = 0, float width = 0) {
+	vector pos = xGetVector(db, xUnitPos);
+	float current = distanceBetweenVectors(pos, start, false);
+	if (current < dist) {
+		vector hitbox = xsVectorSet(xsVectorGetX(start) + current * xsVectorGetX(dir),0,
+			xsVectorGetZ(start) + current * xsVectorGetZ(dir));
+		if (distanceBetweenVectors(pos, hitbox, true) <= width) {
+			return(true);
+		}
+	}
+	return(false);
+}
+
+void addUnit(int name = 0, int id = 0, int p = 0) {
+	xAddDatabaseBlock(dUnits, true);
+	xSetInt(dUnits, xUnitName, name);
+	xSetInt(dUnits, xUnitID, id);
+	xSetInt(dUnits, xUnitOwner, p);
+}
+
 void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	int old = xGetPointer(dPlayerData);
 	xSetPointer(dPlayerData, p);
@@ -20,6 +40,8 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	xSetInt(dPlayerData, xPlayerUnitID, kbGetBlockID(""+xGetInt(dPlayerData, xPlayerUnitName), true));
 	xSetBool(dPlayerData, xPlayerAlive, true);
 	xSetVector(dPlayerData, xPlayerPos, pos);
+
+	addUnit(xGetInt(dPlayerData, xPlayerUnitName), xGetInt(dPlayerData, xPlayerUnitID), p);
 	int x = xsVectorGetX(pos) / 4;
 	int y = xsVectorGetZ(pos) / 4;
 	addFrontier(x * 2, y * 2);
@@ -93,6 +115,30 @@ void shootGenericProj(int p = 0, int db = 0, string proto = "", vector dest = ve
 	trUnitMoveToPoint(xsVectorGetX(dest),0,xsVectorGetZ(dest),-1,false);
 }
 
+void spawnCollectible(vector pos = vector(0,0,0), int type = 0) {
+	xAddDatabaseBlock(dCollectibles, true);
+	xSetInt(dCollectibles, xCollectiblePad, trGetNextUnitScenarioNameNumber());
+	trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+	xUnitSelect(dCollectibles, xCollectiblePad);
+	trUnitChangeProtoUnit("Spy Eye");
+	xUnitSelect(dCollectibles, xCollectiblePad);
+	trMutateSelected(kbGetProtoUnitID("Outpost"));
+	trSetSelectedScale(0,0,0);
+	trUnitSetAnimationPath("1,1,0,0,0,0,0");
+
+	xSetInt(dCollectibles, xCollectibleObject, trGetNextUnitScenarioNameNumber());
+	trArmyDispatch("0,0", "Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),225,true);
+	xUnitSelect(dCollectibles, xCollectibleObject);
+	trSetSelectedScale(0.5,0.5,0.5);
+	trMutateSelected(weaponProto(type));
+	if (type == WEAPON_KNIFE) {
+		trSetSelectedScale(1.5, 1.5, 1.5);
+		trSetUnitOrientation(vector(0,-1,0),vector(-0.707107,0,-0.707107),true);
+	}
+
+	xSetInt(dCollectibles, xCollectibleType, type);
+	xSetVector(dCollectibles, xUnitPos, pos);
+}
 
 
 /*
@@ -111,7 +157,7 @@ void displayWeapons() {
 			name = weaponName(xGetInt(db, xWeaponType)) + " x" + xGetInt(db, xWeaponCount);
 			if (first) {
 				first = false;
-				name = "> " + name + " <";
+				name = "(Q) " + name;
 			}
 			trCounterAddTime("weapon"+i,-1,-9999,name,-1);
 			xDatabaseNext(db);
@@ -196,7 +242,7 @@ void shootWeapon(int p = 0) {
 
 void dash(int p = 0) {
 	if (trCurrentPlayer() == p) {
-		displayWeapons();
+		
 	}
 }
 

@@ -3,6 +3,7 @@ const int WEAPON_GRAPPLING_HOOK = 2;
 const int WEAPON_SMOKE_BOMB = 3;
 const int WEAPON_CAMO = 4;
 const int WEAPON_TRAP = 5;
+const int WEAPON_PORTAL = 6;
 
 const int SHOOT_COOLDOWN = 500;
 const int INVENTORY_SIZE = 3;
@@ -30,6 +31,10 @@ string weaponName(int weapon = 0) {
 		case WEAPON_TRAP:
 		{
 			name = "Trap";
+		}
+		case WEAPON_PORTAL:
+		{
+			name = "Portal Gun";
 		}
 	}
 	return(name);
@@ -59,5 +64,21 @@ void displayWeaponDetails(int weapon = 0) {
 		{
 			trChatSend(0, "Deals 1 damage and stuns the player for a short duration.");
 		}
+		case WEAPON_PORTAL:
+		{
+			trChatSend(0, "Creates a portal through a wall.");
+		}
 	}
+}
+
+int weaponProto(int weapon = 0) {
+	int proto = kbGetProtoUnitID("Stymph Bird Feather");
+	switch(weapon)
+	{
+		case WEAPON_GRAPPLING_HOOK:
+		{
+			proto = kbGetProtoUnitID("Ballista");
+		}
+	}
+	return(proto);
 }
