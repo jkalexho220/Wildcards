@@ -13,6 +13,10 @@ int xPlayerPro = 0;
 int xPlayerThrowPos = 0;
 int xPlayerDashPos = 0;
 
+int xPlayerDashCount = 0;
+int xPlayerDashCooldown = 0;
+int xPlayerDashStep = 0;
+
 int xPlayerShootCooldown = 0;
 
 int xPlayerWeaponDatabase = 0;
@@ -59,6 +63,7 @@ int dCollectibles = 0;
 int xCollectiblePad = 0;
 int xCollectibleObject = 0;
 int xCollectibleType = 0;
+int xCollectibleCount = 0;
 
 
 int initGenericProj(string name = "", float radius = 0) {
@@ -90,7 +95,7 @@ highFrequency
 	xPlayerPro = xInitAddInt(dPlayerData, "pro");
 	xPlayerCharacter = xInitAddInt(dPlayerData, "char");
 
-	xPlayerProto = xInitAddString(dPlayerData, "proto", "Hoplite");
+	xPlayerProto = xInitAddString(dPlayerData, "proto", "Peltast");
 
 	xPlayerProjSpawner = xInitAddInt(dPlayerData, "projSpawner");
 	xPlayerSpotlight = xInitAddInt(dPlayerData, "spotlight");
@@ -106,6 +111,10 @@ highFrequency
 
 	xPlayerShootCooldown = xInitAddInt(dPlayerData, "shootCooldown");
 
+	xPlayerDashCount = xInitAddInt(dPlayerData, "dashCount", 2);
+	xPlayerDashCooldown = xInitAddInt(dPlayerData, "dashCooldown");
+	xPlayerDashStep = xInitAddInt(dPlayerData, "dashStep");
+
 	dSpyRequests = xInitDatabase("spyRequests", 32);
 	xSpyRequestProto = xInitAddInt(dSpyRequests, "proto");
 	xSpyRequestAnim = xInitAddInt(dSpyRequests, "anim");
@@ -119,13 +128,14 @@ highFrequency
 	xUnitOwner = xInitAddInt(dUnits, "owner");
 	xUnitPos = xInitAddVector(dUnits, "pos");
 
-	dKnives = initGenericProj("knives", 1.5);
+	dKnives = initGenericProj("knives", 2.0);
 
 	dCollectibles = xInitDatabase("collectibles");
 	xCollectibleObject = xInitAddInt(dCollectibles, "object");
 	xCollectiblePad = xInitAddInt(dCollectibles, "pad");
 	xCollectibleType = xInitAddInt(dCollectibles, "type");
 	xInitAddVector(dCollectibles, "pos");
+	xCollectibleCount = xInitAddInt(dCollectibles, "count", 1);
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

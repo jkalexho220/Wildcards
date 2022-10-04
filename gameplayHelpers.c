@@ -1,4 +1,17 @@
 int spysearch = 0;
+
+void reselectMyself() {
+	uiClearSelection();
+	int p = trCurrentPlayer();
+	string proto = xGetString(dPlayerData, xPlayerProto, p);
+	trackInsert();
+	trackAddWaypoint();
+	trackAddWaypoint();
+	trBlockAllSounds(false);
+	uiFindType(proto);
+	trackPlay(1,EVENT_REMOVE_CAM_TRACKS);
+}
+
 /*
 Assumes that the target unit is already selected
 */
@@ -115,7 +128,7 @@ void shootGenericProj(int p = 0, int db = 0, string proto = "", vector dest = ve
 	trUnitMoveToPoint(xsVectorGetX(dest),0,xsVectorGetZ(dest),-1,false);
 }
 
-void spawnCollectible(vector pos = vector(0,0,0), int type = 0) {
+void spawnCollectible(vector pos = vector(0,0,0), int type = 0, int count = 1) {
 	xAddDatabaseBlock(dCollectibles, true);
 	xSetInt(dCollectibles, xCollectiblePad, trGetNextUnitScenarioNameNumber());
 	trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
@@ -138,6 +151,7 @@ void spawnCollectible(vector pos = vector(0,0,0), int type = 0) {
 
 	xSetInt(dCollectibles, xCollectibleType, type);
 	xSetVector(dCollectibles, xUnitPos, pos);
+	xSetInt(dCollectibles, xCollectibleCount, count);
 }
 
 
@@ -226,6 +240,11 @@ void shootWeapon(int p = 0) {
 				case WEAPON_KNIFE:
 				{
 					shootGenericProj(p, dKnives, "Stymph Bird Feather", xGetVector(dPlayerData, xPlayerThrowPos));
+					trQuestVarSetFromRand("sound", 1, 5, true);
+					xUnitSelectByID(dPlayerData, xPlayerUnitID);
+					if (trUnitVisToPlayer()) {
+						trSoundPlayFN("arrow"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+					}
 				}
 			}
 			xSetInt(db, xWeaponCount, xGetInt(db, xWeaponCount) - 1);
@@ -240,9 +259,54 @@ void shootWeapon(int p = 0) {
 	}
 }
 
+void displayDashCount() {
+	trCounterAbort("dashes");
+	string msg = "(E) Dash [";
+	int count = xGetInt(dPlayerData, xPlayerDashCount);
+	if (count < 2) {
+		int timediff = (xGetInt(dPlayerData, xPlayerDashCooldown) - trTimeMS()) / 1000;
+		trCounterAddTime("dashes",timediff,0,msg + xGetInt(dPlayerData, xPlayerDashCount) + "/2]",-1);
+	} else {
+		trCounterAddTime("dashes",-1,-9999,msg + "2/2]",-1);
+	}
+}
+
 void dash(int p = 0) {
-	if (trCurrentPlayer() == p) {
-		
+	if (xGetInt(dPlayerData, xPlayerDashCount) > 0) {
+		xSetInt(dPlayerData, xPlayerDashCount, xGetInt(dPlayerData, xPlayerDashCount) - 1);
+		if (trTimeMS() > xGetInt(dPlayerData, xPlayerDashCooldown)) {
+			xSetInt(dPlayerData, xPlayerDashCooldown, trTimeMS() + 15000);
+		}
+		vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName), true);
+		vector step = getUnitVector(pos, xGetVector(dPlayerData, xPlayerDashPos), 2.0);
+		vector dest = pos;
+		float dist = xsMin(distanceBetweenVectors(pos, xGetVector(dPlayerData, xPlayerDashPos), false), 8);
+		for(i=dist / 2; >0) {
+			dest = pos + step;
+			if (terrainIsType(vectorToGrid(dest), TERRAIN_WALL, TERRAIN_WALL_SUB)) {
+				break;
+			} else {
+				pos = dest;
+				trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(dest),0,xsVectorGetZ(dest),0,true);
+				trArmySelect("0,0");
+				trUnitChangeProtoUnit("Arkantos Boost SFX");
+			}
+		}
+		int next = trGetNextUnitScenarioNameNumber();
+		trArmyDispatch(""+p+",0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+		trArmySelect(""+p+",0");
+		trMutateSelected(kbGetProtoUnitID("Transport Ship Greek"));
+		trSetUnitOrientation(step * 0.5, vector(0,1,0), true);
+		xUnitSelectByID(dPlayerData, xPlayerUnitID);
+		trImmediateUnitGarrison(""+next);
+		trUnitChangeProtoUnit(xGetString(dPlayerData, xPlayerProto));
+		trUnitSelectClear();
+		trUnitSelect(""+next, true);
+		trUnitChangeProtoUnit("Dust Medium");
+		if (trCurrentPlayer() == p) {
+			trSoundPlayFN("sphinxteleportout.wav","1",-1,"","");
+			displayDashCount();
+		}
 	}
 }
 

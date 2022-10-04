@@ -103,6 +103,7 @@ highFrequency
 {
 	xsDisableSelf();
 	for(p=1; < cNumberPlayers) {
+		modifyPlayableProto("Peltast", p);
 		modifyPlayableProto("Hoplite", p);
 		modifyPlayableProto("Pharaoh of Osiris", p);
 		modifyPlayableProto("Hero Greek Odysseus", p);

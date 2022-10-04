@@ -93,6 +93,8 @@ highFrequency
 	trCameraCut(vector(-46.464447,70.710701,-46.464447) + startPos, vector(0.5,-0.707107,0.5), vector(0.5,0.707107,0.5), vector(0.707107,0,-0.707107));
 
 	trSetCounterDisplay("(W) Switch Item");
+	displayWeapons();
+	displayDashCount();
 }
 
 rule gameplay_always
@@ -108,6 +110,29 @@ highFrequency
 
 	for(p=1; < cNumberPlayers) {
 		xSetPointer(dPlayerData, p);
+		switch(xGetInt(dPlayerData, xPlayerDashStep))
+		{
+			case 0:
+			{
+				if (xGetInt(dPlayerData, xPlayerDashCount) < 2) {
+					xSetInt(dPlayerData, xPlayerDashCooldown, trTimeMS() + 15000);
+					if (trCurrentPlayer() == p) {
+						displayDashCount();
+					}
+					xSetInt(dPlayerData, xPlayerDashStep, 1);
+				}
+			}
+			case 1:
+			{
+				if (trTimeMS() > xGetInt(dPlayerData, xPlayerDashCooldown)) {
+					xSetInt(dPlayerData, xPlayerDashStep, 0);
+					xSetInt(dPlayerData, xPlayerDashCount, 1 + xGetInt(dPlayerData, xPlayerDashCount));
+					if (trCurrentPlayer() == p) {
+						displayDashCount();
+					}
+				}
+			}
+		}
 		if (trPlayerResourceCount(p, "food") > 0) {
 			trPlayerGrantResources(p, "food", -9999);
 			shootWeapon(p);
@@ -184,13 +209,15 @@ highFrequency
 				pointer = xGetPointer(dKnives);
 				for(j=xGetDatabaseCount(dKnives); >1) {
 					xDatabaseNext(dKnives);
-					if (rayCollision(dKnives, prev, dir, dist, 1.0)) {
-						xUnitSelectByID(dKnives, xUnitID);
-						trUnitChangeProtoUnit("Lightning Sparks ground");
-						spawnCollectible(vectorSnapToGrid(xGetVector(dKnives, xProjPrev) - xGetVector(dKnives, xProjDir) * 2.0), WEAPON_KNIFE);
-						xFreeDatabaseBlock(dKnives);
-						hit = true;
-						break;
+					if (xGetInt(dKnives, xUnitOwner) != p) {
+						if (rayCollision(dKnives, prev, dir, dist, xGetFloat(dKnives, xProjRadius))) {
+							xUnitSelectByID(dKnives, xUnitID);
+							trUnitChangeProtoUnit("Lightning Sparks ground");
+							spawnCollectible(vectorSnapToGrid(xGetVector(dKnives, xProjPrev) - xGetVector(dKnives, xProjDir) * 2.0), WEAPON_KNIFE);
+							xFreeDatabaseBlock(dKnives);
+							hit = true;
+							break;
+						}
 					}
 				}
 				xSetPointer(dKnives, pointer);
@@ -207,6 +234,35 @@ highFrequency
 			}
 			if (hit == false) {
 				xSetVector(dKnives, xProjPrev, pos);
+			}
+		}
+	}
+
+	// Collectibles
+	for(i=xsMin(5, xGetDatabaseCount(dCollectibles)); >0) {
+		xDatabaseNext(dCollectibles);
+		xUnitSelect(dCollectibles, xCollectibleObject);
+		if (trUnitIsSelected()) {
+			displayWeaponDetails(xGetInt(dCollectibles, xCollectibleType));
+			reselectMyself();
+		}
+		for(p=1; < cNumberPlayers) {
+			xSetPointer(dPlayerData, p);
+			if (xGetBool(dPlayerData, xPlayerAlive)) {
+				if (distanceBetweenVectors(xGetVector(dPlayerData, xPlayerPos), xGetVector(dCollectibles, xUnitPos)) < 10.0) {
+					if (pickUpWeapon(p, xGetInt(dCollectibles, xCollectibleType), xGetInt(dCollectibles, xCollectibleCount))) { 
+						xUnitSelect(dCollectibles, xCollectibleObject);
+						trUnitChangeProtoUnit("Fireball Launch Damage Effect");
+						xUnitSelect(dCollectibles, xCollectiblePad);
+						trUnitChangeProtoUnit("Dust Small");
+						xFreeDatabaseBlock(dCollectibles);
+						trQuestVarSetFromRand("sound", 1, 2, true);
+						if (trCurrentPlayer() == p) {
+							trSoundPlayFN("vortexland"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+						}
+						break;
+					}
+				}
 			}
 		}
 	}

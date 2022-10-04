@@ -11,7 +11,7 @@ const int LOS_VISIBLE = 1;
 const int LOS_FRONTIER = 2;
 const int LOS_FRONTIER_AND_VISIBLE = 3;
 
-const float LOS_RADIUS = 125.0;
+const float LOS_RADIUS = 150.0;
 
 /*
 Accepts the x,y grid coordinates and performs ray tracing.

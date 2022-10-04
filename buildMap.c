@@ -25,8 +25,13 @@ highFrequency
 			}
 		}
 	}
+
+	trPaintTerrain(0,0,0,mapSize,TERRAIN_WALL,TERRAIN_WALL_SUB,false);
+	trPaintTerrain(0,0,mapSize,0,TERRAIN_WALL,TERRAIN_WALL_SUB,false);
+	trPaintTerrain(0,mapSize,mapSize,mapSize,TERRAIN_WALL,TERRAIN_WALL_SUB,false);
+	trPaintTerrain(mapSize,0,mapSize,mapSize,TERRAIN_WALL,TERRAIN_WALL_SUB,true);
 	
-	trPaintTerrain(0,0,0,0,trGetTerrainType(0,0),trGetTerrainSubType(0,0),true);
+	//trPaintTerrain(0,0,0,0,trGetTerrainType(0,0),trGetTerrainSubType(0,0),true);
 	
 	xsDisableSelf();
 	xsEnableRule("gameplay_setup");
