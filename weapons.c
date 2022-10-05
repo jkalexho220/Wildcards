@@ -93,7 +93,7 @@ int weaponProto(int weapon = 0) {
 		}
 		case WEAPON_SMOKE_BOMB:
 		{
-			proto = kbGetProtoUnitID("Shade");
+			proto = kbGetProtoUnitID("Sphinx");
 		}
 		case WEAPON_CAMO:
 		{

@@ -98,6 +98,12 @@ void modifyBuildableProto(string proto = "", int p = 0) {
 	trModifyProtounit(proto, p, 4, -999);
 }
 
+void modifyProjectile(string proto = "", int p = 0, float speed = 20.0) {
+	trModifyProtounit(proto, p, 1, 9999999999999999999.0);
+	trModifyProtounit(proto, p, 1, -9999999999999999999.0);
+	trModifyProtounit(proto, p, 1, speed);
+}
+
 rule delayed_modify
 inactive
 highFrequency
@@ -119,11 +125,14 @@ highFrequency
 		modifyBuildableProto("Storehouse", p);
 		trModifyProtounit("Storehouse", p, 16, -1); // storehouse grants 1 gold
 
-		trModifyProtounit("Stymph Bird Feather", p, 1, 9999999999999999999.0);
-		trModifyProtounit("Stymph Bird Feather", p, 1, -9999999999999999999.0);
-		trModifyProtounit("Stymph Bird Feather", p, 1, 20.0);
+		modifyProjectile("Stymph Bird Feather", p, 20.0);
+		modifyProjectile("Wadjet Spit", p, 20.0);
 
 		trModifyProtounit("Lancer Hero", p, 5, 99);
+
+		trModifyProtounit("Lancer Hero", p, 2, 9999999999999999999.0);
+		trModifyProtounit("Lancer Hero", p, 2, -9999999999999999999.0);
+		trModifyProtounit("Lancer Hero", p, 2, 4.0);
 
 		trModifyProtounit("Dwarf", p, 55, 4);
 	}

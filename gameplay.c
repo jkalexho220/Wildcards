@@ -75,6 +75,7 @@ highFrequency
 		trSetUnitOrientation(dir, vector(0,1,0), true);
 		dir = rotationMatrix(dir, mCos, mSin);
 		pickUpWeapon(p, WEAPON_KNIFE, 5);
+		pickUpWeapon(p, WEAPON_GRAPPLING_HOOK, 5);
 	}
 	trQuestVarSetFromRand("sound", 0, 6.283185, false);
 	angle = trQuestVarGet("sound");
@@ -114,6 +115,7 @@ highFrequency
 	int db = 0;
 	int x = 0;
 	int y = 0;
+	vector start = vector(0,0,0);
 	vector pos = vector(0,0,0);
 	vector prev = vector(0,0,0);
 	vector dir = vector(0,0,0);
@@ -295,6 +297,157 @@ highFrequency
 		}
 	}
 
+	// grappling collision detection
+	for(i=xGetDatabaseCount(dGrapplingHooks); >0) {
+		xDatabaseNext(dGrapplingHooks);
+		xSetVector(dGrapplingHooks, xUnitPos, kbGetBlockPosition(""+xGetInt(dGrapplingHooks, xUnitName), true));
+		switch(xGetInt(dGrapplingHooks, xGrapplingHookStep))
+		{
+			case 0:
+			{
+				if (xGetDatabaseCount(dSpyRequests) == 0) {
+					xSetInt(dGrapplingHooks, xGrapplingHookStep, 1);
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+					trMutateSelected(kbGetProtoUnitID("Torch"));
+					trUnitSetAnimationPath("2,0,1,1,1,0,0");
+					trSetSelectedUpVector(0,-1,0);
+				}
+			}
+			case 1:
+			{
+				p = xGetInt(dGrapplingHooks, xUnitOwner);
+				pos = xGetVector(dGrapplingHooks, xUnitPos);
+				start = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true);
+				dist = distanceBetweenVectors(pos, start, false) / 6.0;
+				dir = getUnitVector(pos, start, dist);
+				// draw the lines
+				xUnitSelect(dGrapplingHooks, xGrapplingHookLineProj);
+				trSetSelectedUpVector(xsVectorGetX(dir), -0.99, xsVectorGetZ(dir));
+				xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+				trSetSelectedUpVector(0.0 - xsVectorGetX(dir), -0.99, 0.0 - xsVectorGetZ(dir));
+
+				prev = xGetVector(dGrapplingHooks, xProjPrev);
+				dist = distanceBetweenVectors(pos, prev);
+				if (terrainIsType(vectorToGrid(pos), TERRAIN_WALL, TERRAIN_WALL_SUB)) {
+					pointer = xGetInt(dPlayerData, xPlayerIndex, p);
+					xSetPointer(dUnits, pointer);
+					if (xGetBool(dPlayerData, xPlayerAlive, p) && (xGetBool(dUnits, xUnitLaunched) == false)) {
+						xSetInt(dGrapplingHooks, xGrapplingHookStep, 2);
+						xUnitSelectByID(dGrapplingHooks, xUnitID);
+						trMutateSelected(kbGetProtoUnitID("Wadjet Spit"));
+						xSetInt(dGrapplingHooks, xGrapplingHookIndex, pointer);
+						xSetInt(dGrapplingHooks, xGrapplingHookTarget, xGetInt(dPlayerData, xPlayerUnitID, p));
+						launchUnit(dUnits, prev);
+						if (trUnitVisToPlayer()) {
+							trSoundPlayFN("wall.wav","1",-1,"","");
+						}
+					} else {
+						xUnitSelect(dGrapplingHooks, xGrapplingHookLineProj);
+						trUnitDestroy();
+						xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+						trUnitDestroy();
+						xUnitSelectByID(dGrapplingHooks, xUnitID);
+						trUnitChangeProtoUnit("Dust Small");
+						xFreeDatabaseBlock(dGrapplingHooks);
+					}
+				} else if (dist > 1.0) {
+					p = xGetInt(dGrapplingHooks, xUnitOwner);
+					dist = xsSqrt(dist);
+					dir = xGetVector(dGrapplingHooks, xProjDir);
+					for(j=xGetDatabaseCount(dUnits); >0) {
+						xDatabaseNext(dUnits);
+						if (xGetInt(dUnits, xUnitOwner) == p) {
+							continue;
+						} else if (xGetInt(dUnits, xUnitOwner) > 0) {
+							if (rayCollision(dUnits, prev, dir, dist, xGetFloat(dGrapplingHooks, xProjRadius))) {
+								trQuestVarSetFromRand("sound", 1, 2, true);
+								if (trUnitVisToPlayer()) {
+									trSoundPlayFN("titanpunch"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+								}
+								xSetInt(dGrapplingHooks, xGrapplingHookStep, 3);
+								launchUnit(dUnits, start);
+								
+								xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+								trUnitDestroy();
+								xUnitSelect(dGrapplingHooks, xGrapplingHookLineProj);
+								trUnitDestroy();
+								xUnitSelectByID(dGrapplingHooks, xUnitID);
+								trUnitChangeProtoUnit("Dust Small");
+								
+								xSetInt(dGrapplingHooks, xGrapplingHookIndex, xGetPointer(dUnits));
+								xSetInt(dGrapplingHooks, xGrapplingHookTarget, xGetInt(dUnits, xUnitID));
+								xSetVector(dGrapplingHooks, xProjPrev, start);
+								
+								xUnitSelectByID(dUnits, xUnitID);
+								spyEffect(kbGetProtoUnitID("Cinematic Block"), -1, xsVectorSet(dGrapplingHooks, xGrapplingHookLinePlayer, xGetPointer(dGrapplingHooks)));
+								
+								hit = true;
+								break;
+							}
+						}
+					}
+					if (hit == false) {
+						xSetVector(dGrapplingHooks, xProjPrev, pos);
+					}
+				}
+			}
+			case 2: // pull self to wall
+			{
+				xUnitSelectByID(dGrapplingHooks, xGrapplingHookTarget);
+				if (trUnitAlive() && xGetBool(dUnits, xUnitLaunched, xGetInt(dGrapplingHooks, xGrapplingHookIndex))) {
+					p = xGetInt(dGrapplingHooks, xUnitOwner);
+					pos = xGetVector(dGrapplingHooks, xUnitPos);
+					start = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true);
+					dist = distanceBetweenVectors(pos, start, false) / 6.0;
+					dir = getUnitVector(pos, start, dist);
+					// draw the lines
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLineProj);
+					trSetSelectedUpVector(xsVectorGetX(dir), -0.99, xsVectorGetZ(dir));
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+					trSetSelectedUpVector(0.0 - xsVectorGetX(dir), -0.99, 0.0 - xsVectorGetZ(dir));
+				} else {
+					debugLog("done");
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLineProj);
+					trUnitDestroy();
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+					trUnitDestroy();
+					xUnitSelectByID(dGrapplingHooks, xUnitID);
+					trUnitChangeProtoUnit("Dust Small");
+					xFreeDatabaseBlock(dGrapplingHooks);
+				}
+			}
+			case 3: // pull enemy to self
+			{
+				if (xGetDatabaseCount(dSpyRequests) == 0) {
+					xSetInt(dGrapplingHooks, xGrapplingHookStep, 4);
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+					trMutateSelected(kbGetProtoUnitID("Torch"));
+					trUnitSetAnimationPath("2,0,1,1,1,0,0");
+					trSetSelectedUpVector(0,-1,0);
+				}
+			}
+			case 4:
+			{
+				xUnitSelectByID(dGrapplingHooks, xGrapplingHookTarget);
+				if (trUnitAlive() && xGetBool(dUnits, xUnitLaunched, xGetInt(dGrapplingHooks, xGrapplingHookIndex))) {
+					pointer = xGetInt(dGrapplingHooks, xGrapplingHookIndex);
+					pos = xGetVector(dUnits, xUnitPos, pointer);
+					start = xGetVector(dGrapplingHooks, xProjPrev);
+					dist = distanceBetweenVectors(pos, start, false) / 6.0;
+					dir = getUnitVector(pos, start, dist);
+					// draw the lines
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+					trSetSelectedUpVector(xsVectorGetX(dir), -0.99, xsVectorGetZ(dir));
+				} else {
+					debugLog("done");
+					xUnitSelect(dGrapplingHooks, xGrapplingHookLinePlayer);
+					trUnitDestroy();
+					xFreeDatabaseBlock(dGrapplingHooks);
+				}
+			}
+		}
+	}
+
 	// Collectibles
 	for(i=xsMin(5, xGetDatabaseCount(dCollectibles)); >0) {
 		xDatabaseNext(dCollectibles);
@@ -402,4 +555,5 @@ highFrequency
 		trQuestVarSetFromRand("rand", 2, WEAPON_TYPES, true);
 		spawnCollectible(perlinRoll(perlin, x, y, 1.0, 0.5), 1*trQuestVarGet("rand"), val);
 	}
+	processLaunchedUnit();
 }

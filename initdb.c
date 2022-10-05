@@ -26,6 +26,8 @@ int xPlayerWeaponDatabase = 0;
 int xPlayerWeaponCurrent = 0;
 int xPlayerWeaponTop = 0;
 
+int xPlayerIndex = 0;
+
 int xPlayerProjSpawner = 0;
 int xPlayerSpotlight = 0;
 int xPlayerDeflector = 0;
@@ -54,6 +56,7 @@ int xUnitName = 0;
 int xUnitID = 0;
 int xUnitOwner = 0;
 int xUnitPos = 0;
+int xUnitLaunched = 0;
 
 // projectiles
 int xProjDir = 0;
@@ -76,6 +79,21 @@ int xGoldMineRevealer = 0;
 int xGoldMineHolder = 0;
 int xGoldMineCircle = 0;
 int xGoldMineValue = 0;
+
+int dGrapplingHooks = 0;
+int xGrapplingHookLineProj = 0;
+int xGrapplingHookLinePlayer = 0;
+int xGrapplingHookStep = 0;
+int xGrapplingHookIndex = 0;
+int xGrapplingHookTarget = 0;
+
+int dLaunchedUnits = 0;
+int xLaunchedCar = 0;
+int xLaunchedDB = 0;
+int xLaunchedIndex = 0;
+int xLaunchedDest = 0;
+int xLaunchedTimeout = 0;
+int xLaunchedProto = 0;
 
 int initGenericProj(string name = "", float radius = 0) {
 	int db = xInitDatabase(name);
@@ -110,6 +128,7 @@ highFrequency
 
 	xPlayerPoints = xInitAddInt(dPlayerData, "points", 0);
 	xPlayerRespawnTime = xInitAddInt(dPlayerData, "respawnTime");
+	xPlayerIndex = xInitAddInt(dPlayerData, "index");
 
 	xPlayerProjSpawner = xInitAddInt(dPlayerData, "projSpawner");
 	xPlayerSpotlight = xInitAddInt(dPlayerData, "spotlight");
@@ -142,8 +161,16 @@ highFrequency
 	xUnitID = xInitAddInt(dUnits, "id");
 	xUnitOwner = xInitAddInt(dUnits, "owner");
 	xUnitPos = xInitAddVector(dUnits, "pos");
+	xUnitLaunched = xInitAddBool(dUnits, "launched", false);
 
 	dKnives = initGenericProj("knives", 2.0);
+
+	dGrapplingHooks = initGenericProj("grapplingHooks", 4.0);
+	xGrapplingHookLineProj = xInitAddInt(dGrapplingHooks, "lineProj");
+	xGrapplingHookLinePlayer = xInitAddInt(dGrapplingHooks, "linePlayer");
+	xGrapplingHookStep = xInitAddInt(dGrapplingHooks, "step", 0);
+	xGrapplingHookIndex = xInitAddInt(dGrapplingHooks, "index");
+	xGrapplingHookTarget = xInitAddInt(dGrapplingHooks, "target");
 
 	dCollectibles = xInitDatabase("collectibles");
 	xCollectibleObject = xInitAddInt(dCollectibles, "object");
@@ -160,6 +187,17 @@ highFrequency
 	xGoldMineRevealer = xInitAddInt(dGoldMines, "revealer");
 	xGoldMineCircle = xInitAddInt(dGoldMines, "circle");
 	xGoldMineValue = xInitAddInt(dGoldMines, "value");
+
+	dLaunchedUnits = xInitDatabase("launchedUnits",10);
+	xInitAddInt(dLaunchedUnits,"name");
+	xInitAddInt(dLaunchedUnits,"id");
+	xInitAddInt(dLaunchedUnits,"owner");
+	xLaunchedCar = xInitAddInt(dLaunchedUnits,"car");
+	xLaunchedDB = xInitAddInt(dLaunchedUnits,"database");
+	xLaunchedIndex = xInitAddInt(dLaunchedUnits,"index");
+	xLaunchedDest = xInitAddVector(dLaunchedUnits,"dest");
+	xLaunchedTimeout = xInitAddInt(dLaunchedUnits,"timeout");
+	xLaunchedProto = xInitAddInt(dLaunchedUnits, "proto");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

@@ -111,11 +111,12 @@ bool rayCollision(int db = 0, vector start = vector(0,0,0), vector dir = vector(
 	return(false);
 }
 
-void addUnit(int name = 0, int id = 0, int p = 0) {
+int addUnit(int name = 0, int id = 0, int p = 0) {
 	xAddDatabaseBlock(dUnits, true);
 	xSetInt(dUnits, xUnitName, name);
 	xSetInt(dUnits, xUnitID, id);
 	xSetInt(dUnits, xUnitOwner, p);
+	return(xGetNewestPointer(dUnits));
 }
 
 void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
@@ -130,7 +131,7 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	xSetBool(dPlayerData, xPlayerAlive, true);
 	xSetVector(dPlayerData, xPlayerPos, pos);
 
-	addUnit(xGetInt(dPlayerData, xPlayerUnitName), xGetInt(dPlayerData, xPlayerUnitID), p);
+	xSetInt(dPlayerData, xPlayerIndex, addUnit(xGetInt(dPlayerData, xPlayerUnitName), xGetInt(dPlayerData, xPlayerUnitID), p));
 	int x = xsVectorGetX(pos) / 4;
 	int y = xsVectorGetZ(pos) / 4;
 
@@ -168,6 +169,96 @@ vector vectorSetAsTargetVector(vector from = vector(0,0,0), vector dir = vector(
 	return(target);
 }
 
+int launchUnit(int db = 0, vector dest = vector(0,0,0), bool ignoreWalls = false) {
+	int index = -1;
+	if (xGetBool(db, xUnitLaunched) == false) {
+		xSetBool(db, xUnitLaunched, true);
+		int type = kbGetUnitBaseTypeID(xGetInt(db, xUnitID));
+		int p = xGetInt(db, xUnitOwner);
+
+		xUnitSelectByID(db,xUnitID);
+		trUnitChangeProtoUnit("Transport Ship Greek");
+		
+		vector start = kbGetBlockPosition(""+xGetInt(db,xUnitName));
+		vector dir = getUnitVector(start,dest);
+		
+		int next = trGetNextUnitScenarioNameNumber();
+		trArmyDispatch(""+p+",0","Dwarf",1,1,0,1,0,true);
+		trUnitSelectClear();
+		trUnitSelect(""+next,true);
+		trImmediateUnitGarrison(""+xGetInt(db,xUnitName));
+		trUnitChangeProtoUnit("Dwarf");
+		
+		trUnitSelectClear();
+		trUnitSelect(""+next,true);
+		trSetUnitOrientation(dir, vector(0,1,0), true);
+		trMutateSelected(kbGetProtoUnitID("Lancer Hero"));
+		
+		xUnitSelectByID(db,xUnitID);
+		trMutateSelected(type);
+		trUnitOverrideAnimation(24,0,true,true,-1);
+		trMutateSelected(kbGetProtoUnitID("Relic"));
+		trImmediateUnitGarrison(""+next);
+		trMutateSelected(type);
+		
+		float dist = distanceBetweenVectors(start, dest, false);
+		for(x=0; < dist / 2) {
+			vector nextpos = xsVectorSet(xsVectorGetX(start) + 2.0 * xsVectorGetX(dir),0,
+				xsVectorGetZ(start) + 2.0 * xsVectorGetZ(dir));
+			if (terrainIsType(vectorToGrid(nextpos), TERRAIN_WALL, TERRAIN_WALL_SUB) && (ignoreWalls == false)) {
+				break;
+			} else {
+				start = nextpos;
+			}
+		}
+		
+		trUnitSelectClear();
+		trUnitSelect(""+next,true);
+		trMutateSelected(kbGetProtoUnitID("Wadjet Spit"));
+		trUnitMoveToPoint(xsVectorGetX(start),0,xsVectorGetZ(start),-1,false);
+		
+		index = xAddDatabaseBlock(dLaunchedUnits, true);
+		xSetInt(dLaunchedUnits,xUnitName,xGetInt(db,xUnitName));
+		xSetInt(dLaunchedUnits,xUnitOwner,xGetInt(db,xUnitOwner));
+		xSetInt(dLaunchedUnits,xUnitID,xGetInt(db,xUnitID));
+		xSetInt(dLaunchedUnits, xLaunchedCar, next);
+		xSetInt(dLaunchedUnits,xLaunchedIndex,xGetPointer(db));
+		xSetVector(dLaunchedUnits,xLaunchedDest,start);
+		xSetInt(dLaunchedUnits,xLaunchedTimeout, trTimeMS() + 1100 * dist / 15);
+		xSetInt(dLaunchedUnits, xLaunchedDB, db);
+		xSetInt(dLaunchedUnits, xLaunchedProto, type);
+	}
+	return(index);
+}
+
+
+void processLaunchedUnit() {
+	for(i=xGetDatabaseCount(dLaunchedUnits); >0) {
+		xDatabaseNext(dLaunchedUnits);
+		vector dest = xGetVector(dLaunchedUnits,xLaunchedDest);
+		vector pos = kbGetBlockPosition(""+xGetInt(dLaunchedUnits, xUnitName));
+		xUnitSelectByID(dLaunchedUnits,xUnitID);
+		if (trUnitAlive() == false ||
+			distanceBetweenVectors(pos, dest) < 4.0 ||
+			trTimeMS() > xGetInt(dLaunchedUnits, xLaunchedTimeout)) {
+			if (trUnitAlive()) {
+				int p = xGetInt(dLaunchedUnits,xUnitOwner);
+				int db = xGetInt(dLaunchedUnits,xLaunchedDB);
+				xSetBool(db, xUnitLaunched, false, xGetInt(dLaunchedUnits,xLaunchedIndex));
+				trUnitChangeProtoUnit(kbGetProtoUnitName(xGetInt(dLaunchedUnits,xLaunchedProto)));
+				xUnitSelect(dLaunchedUnits,xUnitName);
+				trMutateSelected(xGetInt(dLaunchedUnits,xLaunchedProto));
+			} else {
+				trUnitChangeProtoUnit(kbGetProtoUnitName(xGetInt(dLaunchedUnits,xLaunchedProto)));
+			}
+			xUnitSelect(dLaunchedUnits,xLaunchedCar);
+			trUnitChangeProtoUnit("Dust Small");
+			xFreeDatabaseBlock(dLaunchedUnits);
+		}
+	}
+}
+
+
 int spawnObject(int p = 0, string proto = "") {
 	int next = trGetNextUnitScenarioNameNumber() + 1;
 	xSetPointer(dPlayerData, p);
@@ -188,19 +279,50 @@ int spawnObject(int p = 0, string proto = "") {
 	return(next);
 }
 
-void shootGenericProj(int p = 0, int db = 0, string proto = "", vector dest = vector(0,0,0)) {
-	vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true);
-	vector dir = getUnitVector(pos, dest);
-
+void spawnGenericProj(int p = 0, int db = 0, string proto = "", vector pos = vector(0,0,0), vector dir = vector(0,0,0)) {
 	xAddDatabaseBlock(db, true);
 	xSetInt(db, xUnitName, spawnObject(p, proto));
 	xSetInt(db, xUnitID, kbGetBlockID(""+xGetInt(db, xUnitName), true));
 	xSetInt(db, xUnitOwner, p);
 	xSetVector(db, xProjPrev, pos);
 	xSetVector(db, xProjDir, dir);
-	
+}
+
+void shootGenericProj(int p = 0, int db = 0, string proto = "", vector dest = vector(0,0,0)) {
+	vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true);
+	vector dir = getUnitVector(pos, dest);
 	dest = vectorSetAsTargetVector(pos, dir, 999.0);
+
+	spawnGenericProj(p, db, proto, pos, dir);
+	
 	xUnitSelectByID(db, xUnitID);
+	trSetUnitOrientation(dir, vector(0,1,0), true);
+	trUnitMoveToPoint(xsVectorGetX(dest),0,xsVectorGetZ(dest),-1,false);
+}
+
+void shootGrapplingHook(int p = 0, vector dest = vector(0,0,0)) {
+	vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true);
+	vector dir = getUnitVector(pos, dest);
+	dest = vectorSetAsTargetVector(pos, dir, 999.0);
+
+	spawnGenericProj(p, dGrapplingHooks, "Lancer Hero", pos, dir);
+	xSetInt(dGrapplingHooks, xGrapplingHookLineProj, trGetNextUnitScenarioNameNumber());
+	trArmyDispatch(""+p+",0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+	trArmySelect(""+p+",0");
+	trMutateSelected(kbGetProtoUnitID("Torch"));
+	trUnitSetAnimationPath("2,0,1,1,1,0,0");
+
+	trMutateSelected(kbGetProtoUnitID("Relic"));
+	trImmediateUnitGarrison(""+xGetInt(dGrapplingHooks, xUnitName));
+	trMutateSelected(kbGetProtoUnitID("Torch"));
+	trSetSelectedUpVector(0,-1,0);
+
+	trUnitSelectClear();
+	trUnitSelectByID(xGetInt(dPlayerData, xPlayerUnitID, p));
+	spyEffect(kbGetProtoUnitID("Cinematic Block"), -1, xsVectorSet(dGrapplingHooks, xGrapplingHookLinePlayer, xGetNewestPointer(dGrapplingHooks)));
+
+	xUnitSelectByID(dGrapplingHooks, xUnitID);
+	trMutateSelected(kbGetProtoUnitID("Wadjet Spit"));
 	trSetUnitOrientation(dir, vector(0,1,0), true);
 	trUnitMoveToPoint(xsVectorGetX(dest),0,xsVectorGetZ(dest),-1,false);
 }
@@ -230,7 +352,7 @@ void spawnCollectible(vector pos = vector(0,0,0), int type = 0, int count = 1) {
 	}
 
 	xSetInt(dCollectibles, xCollectibleType, type);
-	xSetVector(dCollectibles, xUnitPos, pos);
+	xSetVector(dCollectibles, xUnitPos, kbGetBlockPosition(""+xGetInt(dCollectibles, xCollectiblePad), true));
 	xSetInt(dCollectibles, xCollectibleCount, count);
 }
 
@@ -356,6 +478,14 @@ void shootWeapon(int p = 0) {
 						trSoundPlayFN("arrow"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
 					}
 				}
+				case WEAPON_GRAPPLING_HOOK:
+				{
+					shootGrapplingHook(p, xGetVector(dPlayerData, xPlayerThrowPos));
+					xUnitSelectByID(dPlayerData, xPlayerUnitID);
+					if (trUnitVisToPlayer()) {
+						trSoundPlayFN("petrobolosattack.wav","1",-1,"","");
+					}
+				}
 			}
 			xSetInt(db, xWeaponCount, xGetInt(db, xWeaponCount) - 1);
 			if (xGetInt(db, xWeaponCount) == 0) {
@@ -372,39 +502,41 @@ void shootWeapon(int p = 0) {
 
 void dash(int p = 0) {
 	if (xGetInt(dPlayerData, xPlayerDashCount) > 0) {
-		xSetInt(dPlayerData, xPlayerDashCount, xGetInt(dPlayerData, xPlayerDashCount) - 1);
-		if (trTimeMS() > xGetInt(dPlayerData, xPlayerDashCooldown)) {
-			xSetInt(dPlayerData, xPlayerDashCooldown, trTimeMS() + 15000);
-		}
-		vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName), true);
-		vector step = getUnitVector(pos, xGetVector(dPlayerData, xPlayerDashPos), 2.0);
-		vector dest = pos;
-		float dist = xsMin(distanceBetweenVectors(pos, xGetVector(dPlayerData, xPlayerDashPos), false), 8);
-		for(i=dist / 2; >0) {
-			dest = pos + step;
-			if (terrainIsType(vectorToGrid(dest), TERRAIN_WALL, TERRAIN_WALL_SUB)) {
-				break;
-			} else {
-				pos = dest;
-				trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(dest),0,xsVectorGetZ(dest),0,true);
-				trArmySelect("0,0");
-				trUnitChangeProtoUnit("Arkantos Boost SFX");
+		if (xGetBool(dUnits, xUnitLaunched, xGetInt(dPlayerData, xPlayerIndex, p)) == false) {
+			xSetInt(dPlayerData, xPlayerDashCount, xGetInt(dPlayerData, xPlayerDashCount) - 1);
+			if (trTimeMS() > xGetInt(dPlayerData, xPlayerDashCooldown)) {
+				xSetInt(dPlayerData, xPlayerDashCooldown, trTimeMS() + 15000);
 			}
-		}
-		int next = trGetNextUnitScenarioNameNumber();
-		trArmyDispatch(""+p+",0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
-		trArmySelect(""+p+",0");
-		trMutateSelected(kbGetProtoUnitID("Transport Ship Greek"));
-		trSetUnitOrientation(step * 0.5, vector(0,1,0), true);
-		xUnitSelectByID(dPlayerData, xPlayerUnitID);
-		trImmediateUnitGarrison(""+next);
-		trUnitChangeProtoUnit(xGetString(dPlayerData, xPlayerProto));
-		trUnitSelectClear();
-		trUnitSelect(""+next, true);
-		trUnitChangeProtoUnit("Dust Medium");
-		displayWeapons(p);
-		if (trCurrentPlayer() == p) {
-			trSoundPlayFN("sphinxteleportout.wav","1",-1,"","");
+			vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName), true);
+			vector step = getUnitVector(pos, xGetVector(dPlayerData, xPlayerDashPos), 2.0);
+			vector dest = pos;
+			float dist = xsMin(distanceBetweenVectors(pos, xGetVector(dPlayerData, xPlayerDashPos), false), 8);
+			for(i=dist / 2; >0) {
+				dest = pos + step;
+				if (terrainIsType(vectorToGrid(dest), TERRAIN_WALL, TERRAIN_WALL_SUB)) {
+					break;
+				} else {
+					pos = dest;
+					trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(dest),0,xsVectorGetZ(dest),0,true);
+					trArmySelect("0,0");
+					trUnitChangeProtoUnit("Arkantos Boost SFX");
+				}
+			}
+			int next = trGetNextUnitScenarioNameNumber();
+			trArmyDispatch(""+p+",0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+			trArmySelect(""+p+",0");
+			trMutateSelected(kbGetProtoUnitID("Transport Ship Greek"));
+			trSetUnitOrientation(step * 0.5, vector(0,1,0), true);
+			xUnitSelectByID(dPlayerData, xPlayerUnitID);
+			trImmediateUnitGarrison(""+next);
+			trUnitChangeProtoUnit(xGetString(dPlayerData, xPlayerProto));
+			trUnitSelectClear();
+			trUnitSelect(""+next, true);
+			trUnitChangeProtoUnit("Dust Medium");
+			displayWeapons(p);
+			if (trCurrentPlayer() == p) {
+				trSoundPlayFN("sphinxteleportout.wav","1",-1,"","");
+			}
 		}
 	}
 }
