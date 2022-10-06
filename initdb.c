@@ -87,6 +87,16 @@ int xGrapplingHookStep = 0;
 int xGrapplingHookIndex = 0;
 int xGrapplingHookTarget = 0;
 
+int dPortalShots = 0;
+
+int dPortals = 0;
+int xPortalUnitsStart = 0;
+int xPortalUnitsEnd = 0;
+int xPortalPos1 = 0;
+int xPortalPos2 = 0;
+int xPortalTimeout = 0;
+int xPortalUse = 0;
+
 int dLaunchedUnits = 0;
 int xLaunchedCar = 0;
 int xLaunchedDB = 0;
@@ -198,6 +208,16 @@ highFrequency
 	xLaunchedDest = xInitAddVector(dLaunchedUnits,"dest");
 	xLaunchedTimeout = xInitAddInt(dLaunchedUnits,"timeout");
 	xLaunchedProto = xInitAddInt(dLaunchedUnits, "proto");
+
+	dPortalShots = initGenericProj("portals", 3.0);
+
+	dPortals = xInitDatabase("portals");
+	xPortalUnitsStart = xInitAddInt(dPortals, "unit1");
+	xPortalUnitsEnd = xInitAddInt(dPortals, "unit2");
+	xPortalPos1 = xInitAddVector(dPortals, "pos1");
+	xPortalPos2 = xInitAddVector(dPortals, "pos2");
+	xPortalUse = xInitAddInt(dPortals, "use");
+	xPortalTimeout = xInitAddInt(dPortals, "timeout");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

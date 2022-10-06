@@ -486,6 +486,14 @@ void shootWeapon(int p = 0) {
 						trSoundPlayFN("petrobolosattack.wav","1",-1,"","");
 					}
 				}
+				case WEAPON_PORTAL:
+				{
+					shootGenericProj(p, dPortalShots, "Lampades Bolt", xGetVector(dPlayerData, xPlayerThrowPos));
+					xUnitSelectByID(dPlayerData, xPlayerUnitID);
+					if (trUnitVisToPlayer()) {
+						trSoundPlayFN("lampadesshoot.wav","1",-1,"","");
+					}
+				}
 			}
 			xSetInt(db, xWeaponCount, xGetInt(db, xWeaponCount) - 1);
 			if (xGetInt(db, xWeaponCount) == 0) {

@@ -75,7 +75,7 @@ highFrequency
 		trSetUnitOrientation(dir, vector(0,1,0), true);
 		dir = rotationMatrix(dir, mCos, mSin);
 		pickUpWeapon(p, WEAPON_KNIFE, 5);
-		pickUpWeapon(p, WEAPON_GRAPPLING_HOOK, 5);
+		pickUpWeapon(p, WEAPON_PORTAL, 5);
 	}
 	trQuestVarSetFromRand("sound", 0, 6.283185, false);
 	angle = trQuestVarGet("sound");
@@ -115,6 +115,7 @@ highFrequency
 	int db = 0;
 	int x = 0;
 	int y = 0;
+	bool hit = false;
 	vector start = vector(0,0,0);
 	vector pos = vector(0,0,0);
 	vector prev = vector(0,0,0);
@@ -232,7 +233,7 @@ highFrequency
 	}
 
 	// knife collision detection
-	bool hit = false;
+	hit = false;
 	for(i=xGetDatabaseCount(dKnives); >0) {
 		xDatabaseNext(dKnives);
 		pos = xGetVector(dKnives, xUnitPos);
@@ -448,6 +449,85 @@ highFrequency
 		}
 	}
 
+	for(i=xGetDatabaseCount(dPortalShots); >0) {
+		xDatabaseNext(dPortalShots);
+		xSetVector(dPortalShots, xUnitPos, kbGetBlockPosition(""+xGetInt(dPortalShots, xUnitName), true));
+		dir = xGetVector(dPortalShots, xProjDir) * 2.0;
+		pos = xGetVector(dPortalShots, xUnitPos) + dir;
+		if (terrainIsType(vectorToGrid(pos), TERRAIN_WALL, TERRAIN_WALL_SUB)) {
+			hit = false;
+			for(j=mapSize * mapSize; >0) {
+				pos = pos + dir;
+				if (xsVectorGetX(pos) < 0 || xsVectorGetZ(pos) < 0 || xsVectorGetX(pos) > (2.0 * mapSize) || xsVectorGetZ(pos) > (2.0 * mapSize)) {
+					break;
+				} else if (terrainIsType(vectorToGrid(pos), TERRAIN_WALL, TERRAIN_WALL_SUB) == false) {
+					hit = true;
+					break;
+				}
+			}
+			if (hit) {
+				xUnitSelectByID(dPortalShots, xUnitID);
+				if (trUnitVisToPlayer()) {
+					trSoundPlayFN("skypassageout.wav","1",-1,"","");
+				}
+				trUnitDestroy();
+				prev = xGetVector(dPortalShots, xUnitPos);
+				dir = getUnitVector(prev, pos);
+
+				pos = vectorSnapToGrid(pos + dir * 2.0);
+				prev = vectorSnapToGrid(prev - dir * 2.0);
+				dir = getUnitVector(prev, pos);
+				
+				pointer = trGetNextUnitScenarioNameNumber();
+				xAddDatabaseBlock(dPortals, true);
+				xSetInt(dPortals, xPortalUnitsStart, pointer);
+
+				trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(prev),0,xsVectorGetZ(prev),0,true);
+				trUnitSelectClear();
+				trUnitSelect(""+pointer, true);
+				trMutateSelected(kbGetProtoUnitID("Vortex Finish Linked"));
+				trUnitSetAnimationPath("0,0,1,0,0,0,0");
+				trSetUnitOrientation(vector(0,0,0) - dir, vector(0,1,0), true);
+
+				pointer = trGetNextUnitScenarioNameNumber();
+				trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(prev),0,xsVectorGetZ(prev),0,true);
+				trUnitSelectClear();
+				trUnitSelect(""+pointer, true);
+				trMutateSelected(kbGetProtoUnitID("Vortex Finish Linked"));
+				trSetSelectedUpVector(xsVectorGetX(dir), -1.0, xsVectorGetZ(dir));
+				trUnitSetAnimationPath("0,1,0,0,0,0,0");
+
+				pointer = trGetNextUnitScenarioNameNumber();
+				trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+				trUnitSelectClear();
+				trUnitSelect(""+pointer, true);
+				trMutateSelected(kbGetProtoUnitID("Vortex Finish Linked"));
+				trSetSelectedUpVector(0.0 - xsVectorGetX(dir), -1.0, 0.0 - xsVectorGetZ(dir));
+				trUnitSetAnimationPath("0,1,0,0,0,0,0");
+
+				xSetInt(dPortals, xPortalUnitsEnd, trGetNextUnitScenarioNameNumber());
+				pointer = trGetNextUnitScenarioNameNumber();
+				trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+				trUnitSelectClear();
+				trUnitSelect(""+pointer, true);
+				trMutateSelected(kbGetProtoUnitID("Vortex Finish Linked"));
+				trUnitSetAnimationPath("0,0,1,0,0,0,0");
+				trSetUnitOrientation(dir, vector(0,1,0), true);
+				
+				xSetVector(dPortals, xPortalPos1, xGetVector(dPortalShots, xUnitPos));
+				xSetVector(dPortals, xPortalPos2, pos);
+				xSetInt(dPortals, xPortalTimeout, trTimeMS() + 12000);
+				
+			} else {
+				xUnitSelectByID(dPortalShots, xUnitID);
+				if (trUnitVisToPlayer()) {
+					trSoundPlayFN("cantdothat.wav","1",-1,"","");
+				}
+				trUnitDestroy();
+			}
+			xFreeDatabaseBlock(dPortalShots);
+		}
+	}
 	// Collectibles
 	for(i=xsMin(5, xGetDatabaseCount(dCollectibles)); >0) {
 		xDatabaseNext(dCollectibles);
@@ -526,6 +606,7 @@ highFrequency
 		}
 	}
 
+	// TREASURE
 	if (xGetDatabaseCount(dGoldMines) > 0) {
 		xDatabaseNext(dGoldMines);
 		pos = xGetVector(dGoldMines, xUnitPos);
@@ -556,4 +637,65 @@ highFrequency
 		spawnCollectible(perlinRoll(perlin, x, y, 1.0, 0.5), 1*trQuestVarGet("rand"), val);
 	}
 	processLaunchedUnit();
+
+	// portals
+	if (xGetDatabaseCount(dPortals) > 0) {
+		xDatabaseNext(dPortals);
+		pointer = xGetInt(dPortals, xPortalUse);
+		for(p=1; < cNumberPlayers) {
+			val = iModulo(2, pointer);
+			pointer = pointer / 2;
+			xSetPointer(dPlayerData, p);
+			if (xGetBool(dPlayerData, xPlayerAlive)) {
+				x = val;
+				pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
+				if (val == 0) {
+					if (distanceBetweenVectors(pos, xGetVector(dPortals, xPortalPos1)) < 10.0) {
+						x = xGetInt(dPortals, xPortalUnitsEnd);
+						pos = vectorToGrid(xGetVector(dPortals, xPortalPos2));
+					} else if (distanceBetweenVectors(pos, xGetVector(dPortals, xPortalPos2)) < 10.0) {
+						x = xGetInt(dPortals, xPortalUnitsStart);
+						pos = vectorToGrid(xGetVector(dPortals, xPortalPos1));
+					}
+					if (x > 0) {
+						trUnitSelectClear();
+						trUnitSelect(""+x, true);
+						trUnitConvert(p);
+						trUnitChangeProtoUnit("Transport Ship Greek");
+						xUnitSelectByID(dPlayerData, xPlayerUnitID);
+						trImmediateUnitGarrison(""+x);
+						trUnitChangeProtoUnit(xGetString(dPlayerData, xPlayerProto));
+						trUnitSelectClear();
+						trUnitSelect(""+x, true);
+						trUnitConvert(0);
+						trMutateSelected(kbGetProtoUnitID("Vortex Finish Linked"));
+						trUnitSetAnimationPath("0,0,1,0,0,0,0");
+						
+						if (trCurrentPlayer() == p) {
+							trSoundPlayFN("suckup1.wav","1",-1,"","");
+							uiLookAtSelection();
+						}
+						
+						x = xsVectorGetX(pos);
+						y = xsVectorGetZ(pos);
+						removeFrontier(x, y, true);
+						addFrontier(x, y);
+						cleanFrontier();
+						x = 1;
+					}
+				} else if (distanceBetweenVectors(pos, xGetVector(dPortals, xPortalPos1)) > 10.0 && distanceBetweenVectors(pos, xGetVector(dPortals, xPortalPos2)) > 10.0) {
+					x = 0;
+				}
+			}
+			xSetInt(dPortals, xPortalUse, xGetInt(dPortals, xPortalUse) + (x - val) * xsPow(2, p - 1));
+		}
+		if (trTimeMS() > xGetInt(dPortals, xPortalTimeout)) {
+			for(i=xGetInt(dPortals, xPortalUnitsStart); <= xGetInt(dPortals, xPortalUnitsEnd)) {
+				trUnitSelectClear();
+				trUnitSelect(""+i, true);
+				trUnitDestroy();
+			}
+			xFreeDatabaseBlock(dPortals);
+		}
+	}
 }
