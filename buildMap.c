@@ -8,6 +8,7 @@ highFrequency
 {
 	trChangeTerrainHeight(0,0,mapSize+1,mapSize+1,0.0,false);
 	perlin = generatePerlinNoise(mapSize, 10);
+
 	float noise = 0;
 	trPaintTerrain(0,0,mapSize,mapSize,TERRAIN_PRIMARY, TERRAIN_PRIMARY_SUB,false);
 	for(x=0; <= mapSize) {
@@ -33,6 +34,14 @@ highFrequency
 					trArmyDispatch("0,0","Tundra Tree",1,1 + 2 * x, 0, 1 + 2 * y, trQuestVarGet("rand"), true);
 				}
 			}
+		}
+	}
+
+	smokeArray = aiPlanCreate("smokeArray", 8);
+	for(x=0; < mapSize) {
+		aiPlanAddUserVariableInt(smokeArray, x, "smoke"+x, mapSize);
+		for(y=0; < mapSize) {
+			aiPlanSetUserVariableInt(smokeArray, x, y, 0);
 		}
 	}
 

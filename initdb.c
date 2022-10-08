@@ -112,6 +112,16 @@ int xLaunchedProto = 0;
 int dTraps = 0;
 int xTrapArmTime = 0;
 
+int smokeArray = 0;
+int dSmokeTiles = 0;
+int xSmokeTileX = 0;
+int xSmokeTileY = 0;
+int xSmokeTileTerrainType = 0;
+int xSmokeTileTerrainSub = 0;
+
+int dSmokeBombs = 0;
+int xSmokeBombDest = 0;
+
 int initGenericProj(string name = "", float radius = 0) {
 	int db = xInitDatabase(name);
 	xInitAddInt(db, "name");
@@ -235,6 +245,15 @@ highFrequency
 	xInitAddInt(dTraps, "id");
 	xTrapArmTime = xInitAddInt(dTraps, "armTime");
 	xInitAddVector(dTraps, "pos");
+
+	dSmokeTiles = xInitDatabase("smoke");
+	xSmokeTileX = xInitAddInt(dSmokeTiles, "x");
+	xSmokeTileY = xInitAddInt(dSmokeTiles, "y");
+	xSmokeTileTerrainType = xInitAddInt(dSmokeTiles, "terrainType");
+	xSmokeTileTerrainSub = xInitAddInt(dSmokeTiles, "terrainSubType");
+
+	dSmokeBombs = initGenericProj("smokeBombs", 2.0);
+	xSmokeBombDest = xInitAddVector(dSmokeBombs, "destination");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

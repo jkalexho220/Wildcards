@@ -258,6 +258,20 @@ void processLaunchedUnit() {
 	}
 }
 
+void paintSmokeTile(int x = 0, int y = 0, int timestamp = 5000) {
+	if (timestamp > aiPlanGetUserVariableInt(smokeArray, x, y)) {
+		if (aiPlanGetUserVariableInt(smokeArray, x, y) == 0) {
+			xAddDatabaseBlock(dSmokeTiles, true);
+			xSetInt(dSmokeTiles, xSmokeTileX, x);
+			xSetInt(dSmokeTiles, xSmokeTileY, y);
+			xSetInt(dSmokeTiles, xSmokeTileTimeout, timestamp);
+			xSetInt(dSmokeTiles, xSmokeTileTerrainType, trGetTerrainType(x, y));
+			xSetInt(dSmokeTiles, xSmokeTileTerrainSub, trGetTerrainSubType(x, y));
+			trPaintTerrain(x, y, x, y, 2, 5, false); // cliff plain
+		}
+		aiPlanSetUserVariableInt(smokeArray, x, y, timestamp);
+	}
+}
 
 int spawnObject(int p = 0, string proto = "") {
 	int next = trGetNextUnitScenarioNameNumber() + 1;
@@ -513,11 +527,25 @@ void shootWeapon(int p = 0) {
 					xSetInt(dTraps, xUnitName, spawnObject(p, "Statue of Automaton Base"));
 					xSetInt(dTraps, xUnitID, kbGetBlockID(""+xGetInt(dTraps, xUnitName), true));
 					xSetVector(dTraps, xUnitPos, kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true));
-					xSetInt(dTraps, xTrapArmTime, trTimeMS() + 2500);
-					trUnitHighlight(2.5, false);
+					xSetInt(dTraps, xTrapArmTime, trTimeMS() + 1000);
+					trUnitHighlight(1.0, true);
 					if (trCurrentPlayer() == p) {
 						trSoundPlayFN("siegeselect.wav","1",-1,"","");
 						trSoundPlayFN("gatherpoint.wav","1",-1,"","");
+					}
+				}
+				case WEAPON_SMOKESCREEN:
+				{
+					shootGenericProj(p, dSmokeBombs, "Petrobolos Shot", xGetVector(dPlayerData, xPlayerThrowPos));
+					xUnitSelectByID(dSmokeBombs, xUnitID);
+					trUnitChangeProtoUnit("Petrobolos Shot");
+					xUnitSelectByID(dSmokeBombs, xUnitID);
+					trUnitOverrideAnimation(0,0,true,false,-1);
+					trUnitSetAnimationPath("0,1,0,0,0,0,0");
+					xSetVector(dSmokeBombs, xSmokeBombDest, xGetVector(dPlayerData, xPlayerThrowPos));
+					xUnitSelectByID(dPlayerData, xPlayerUnitID);
+					if (trUnitVisToPlayer()) {
+						trSoundPlayFN("catapultattack.wav","1",-1,"","");
 					}
 				}
 			}

@@ -134,6 +134,8 @@ highFrequency
 		trModifyProtounit("Lancer Hero", p, 2, -9999999999999999999.0);
 		trModifyProtounit("Lancer Hero", p, 2, 4.0);
 
+		trModifyProtounit("Catapult Shot", p, 8, -99);
+
 		trModifyProtounit("Dwarf", p, 55, 4);
 	}
 }

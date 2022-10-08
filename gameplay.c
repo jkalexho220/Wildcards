@@ -75,6 +75,7 @@ highFrequency
 		trSetUnitOrientation(dir, vector(0,1,0), true);
 		dir = rotationMatrix(dir, mCos, mSin);
 		pickUpWeapon(p, WEAPON_KNIFE, 5);
+		pickUpWeapon(p, WEAPON_SMOKESCREEN, 5);
 	}
 	trQuestVarSetFromRand("sound", 0, 6.283185, false);
 	angle = trQuestVarGet("sound");
@@ -615,10 +616,10 @@ highFrequency
 				trMessageSetText("The treasure locations have appeared!", -1);
 				if (trCurrentPlayer() == wildcard) {
 					trChatSend(0, "<color=1,1,1>Your goal is to reach the treasure to earn points!</color>");
-					trChatSend(0, "<color=1,1,1>Other players can now damage you!</color>");
+					trChatSend(0, "<color=1,1,1>Other players can now damage you and you can also damage other players!</color>");
 				} else {
 					trChatSend(0, "<color=1,1,1>Stop the Wildcard from reaching the treasure!</color>");
-					trChatSend(0, "<color=1,1,1>You can now damage the Wildcard.</color>");
+					trChatSend(0, "<color=1,1,1>You can now damage the Wildcard. The Wildcard can also damage you.</color>");
 				}
 			}
 		}
@@ -652,6 +653,44 @@ highFrequency
 			trSoundPlayFN("plentyvaultstolen.wav","1",-1,"","");
 			trMessageSetText("The Wildcard has earned " + xGetInt(dGoldMines, xGoldMineValue) + " points!");
 			removeGoldMine();
+		}
+	}
+
+	// Smoke bombs
+	for(i=xGetDatabaseCount(dSmokeBombs); >0) {
+		xDatabaseNext(dSmokeBombs);
+		prev = kbGetBlockPosition(""+xGetInt(dSmokeBombs, xUnitName), true);
+		dir = xGetVector(dSmokeBombs, xProjDir);
+		pos = vectorToGrid(prev + dir * 3.0);
+		if ((distanceBetweenVectors(xGetVector(dSmokeBombs, xSmokeBombDest), prev) < 9.0) || terrainIsType(pos, TERRAIN_WALL, TERRAIN_WALL_SUB)) {
+			prev = vectorToGrid(prev);
+			val = trTimeMS() + 5000;
+			for(x= -5; < 5) {
+				for(y= -5; < 5) {
+					if (xsPow(x, 2) + xsPow(y, 2) <= 25.0) {
+						paintSmokeTile(x + xsVectorGetX(prev), y + xsVectorGetZ(prev), val);
+					}
+				}
+			}
+			xUnitSelectByID(dSmokeBombs, xUnitID);
+			if (trUnitVisToPlayer()) {
+				trSoundPlayFN("argusfreezeattack.wav","1",-1,"","");
+				trSoundPlayFN("shockwave.wav","1",-1,"","");
+			}
+			trUnitChangeProtoUnit("Undermine Building Destruction SFX");
+			xFreeDatabaseBlock(dSmokeBombs);
+		}
+	}
+
+	// Smoke tiles
+	for(i=xsMin(5, xGetDatabaseCount(dSmokeTiles)); >0) {
+		xDatabaseNext(dSmokeTiles);
+		x = xGetInt(dSmokeTiles, xSmokeTileX);
+		y = xGetInt(dSmokeTiles, xSmokeTileY);
+		if (trTimeMS() > aiPlanGetUserVariableInt(smokeArray, x, y)) {
+			trPaintTerrain(x,y,x,y,xGetInt(dSmokeTiles, xSmokeTileTerrainType),xGetInt(dSmokeTiles, xSmokeTileTerrainSub),false);
+			aiPlanSetUserVariableInt(smokeArray, x, y, 0);
+			xFreeDatabaseBlock(dSmokeTiles);
 		}
 	}
 
