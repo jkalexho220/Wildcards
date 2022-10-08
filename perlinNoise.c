@@ -49,8 +49,9 @@ bool coordinatesInPerlin(int meta = 0, int x = 0, int y = 0) {
 }
 
 /*
-As though we were rolling a marble down a hill until it reaches below a certain height.
+As though we were rolling a marble down a hill until it reaches below a certain height in the perlin noise.
 
+Input: x and y coordinates of where the marble will drop in the perlin grid
 Returns a position in vector coordinates.
 */
 vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float height = 0, bool debug = false) {

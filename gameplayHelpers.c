@@ -154,17 +154,17 @@ vector vectorSetAsTargetVector(vector from = vector(0,0,0), vector dir = vector(
 	if (xsVectorGetX(target) < 0) {
 		scale = xsVectorGetX(target) / (xsVectorGetX(target) - xsVectorGetX(from));
 		target = xsVectorSet(0,0, xsVectorGetZ(target) + scale * (xsVectorGetZ(from) - xsVectorGetZ(target)));
-	} else if (xsVectorGetX(target) > (mapSize * 2)) {
-		scale = (xsVectorGetX(target) - (mapSize * 2)) / (xsVectorGetX(target) - xsVectorGetX(from));
-		target = xsVectorSet(mapSize * 2,0,xsVectorGetZ(target) + scale * (xsVectorGetZ(from) - xsVectorGetZ(target)));
+	} else if (xsVectorGetX(target) > (mapSize * 2 + 1)) {
+		scale = (xsVectorGetX(target) - (mapSize * 2 + 1)) / (xsVectorGetX(target) - xsVectorGetX(from));
+		target = xsVectorSet(mapSize * 2 + 1,0,xsVectorGetZ(target) + scale * (xsVectorGetZ(from) - xsVectorGetZ(target)));
 	}
 	
 	if (xsVectorGetZ(target) < 0) {
 		scale = xsVectorGetZ(target) / (xsVectorGetZ(target) - xsVectorGetZ(from));
 		target = xsVectorSet(xsVectorGetX(target) + scale * (xsVectorGetX(from) - xsVectorGetX(target)),0,0);
-	} else if (xsVectorGetZ(target) > (mapSize * 2)) {
-		scale = (xsVectorGetZ(target) - (mapSize * 2)) / (xsVectorGetZ(target) - xsVectorGetZ(from));
-		target = xsVectorSet(xsVectorGetX(target) + scale * (xsVectorGetX(from) - xsVectorGetX(target)),0,mapSize * 2);
+	} else if (xsVectorGetZ(target) > (mapSize * 2 + 1)) {
+		scale = (xsVectorGetZ(target) - (mapSize * 2 + 1)) / (xsVectorGetZ(target) - xsVectorGetZ(from));
+		target = xsVectorSet(xsVectorGetX(target) + scale * (xsVectorGetX(from) - xsVectorGetX(target)),0,mapSize * 2 + 1);
 	}
 	return(target);
 }
@@ -356,6 +356,19 @@ void spawnCollectible(vector pos = vector(0,0,0), int type = 0, int count = 1) {
 	xSetInt(dCollectibles, xCollectibleCount, count);
 }
 
+void snarePlayer(int p = 0, int duration = 2000) {
+	int timestamp = trTimeMS() + 2000;
+	xSetBool(dPlayerData, xPlayerSnared, true);
+	if (xGetInt(dPlayerData, xPlayerSnareTime) < timestamp) {
+		xSetInt(dPlayerData, xPlayerSnareTime, timestamp);
+	}
+	trModifyProtounit(xGetString(dPlayerData, xPlayerProto), p, 55, 2);
+	xUnitSelectByID(dPlayerData, xPlayerUnitID);
+	trMutateSelected(kbGetProtoUnitID(xGetString(dPlayerData, xPlayerProto)));
+	if (trCurrentPlayer() == p) {
+		trChatSend(0, "<color=1,1,1>You have been snared!</color>");
+	}
+}
 
 /*
 Assume trCurrentPlayer() check has already been performed
@@ -494,6 +507,19 @@ void shootWeapon(int p = 0) {
 						trSoundPlayFN("lampadesshoot.wav","1",-1,"","");
 					}
 				}
+				case WEAPON_TRAP:
+				{
+					xAddDatabaseBlock(dTraps, true);
+					xSetInt(dTraps, xUnitName, spawnObject(p, "Statue of Automaton Base"));
+					xSetInt(dTraps, xUnitID, kbGetBlockID(""+xGetInt(dTraps, xUnitName), true));
+					xSetVector(dTraps, xUnitPos, kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true));
+					xSetInt(dTraps, xTrapArmTime, trTimeMS() + 2500);
+					trUnitHighlight(2.5, false);
+					if (trCurrentPlayer() == p) {
+						trSoundPlayFN("siegeselect.wav","1",-1,"","");
+						trSoundPlayFN("gatherpoint.wav","1",-1,"","");
+					}
+				}
 			}
 			xSetInt(db, xWeaponCount, xGetInt(db, xWeaponCount) - 1);
 			if (xGetInt(db, xWeaponCount) == 0) {
@@ -509,7 +535,7 @@ void shootWeapon(int p = 0) {
 }
 
 void dash(int p = 0) {
-	if (xGetInt(dPlayerData, xPlayerDashCount) > 0) {
+	if ((xGetInt(dPlayerData, xPlayerDashCount) > 0) && (xGetBool(dPlayerData, xPlayerSnared) == false)) {
 		if (xGetBool(dUnits, xUnitLaunched, xGetInt(dPlayerData, xPlayerIndex, p)) == false) {
 			xSetInt(dPlayerData, xPlayerDashCount, xGetInt(dPlayerData, xPlayerDashCount) - 1);
 			if (trTimeMS() > xGetInt(dPlayerData, xPlayerDashCooldown)) {

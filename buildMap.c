@@ -12,16 +12,26 @@ highFrequency
 	trPaintTerrain(0,0,mapSize,mapSize,TERRAIN_PRIMARY, TERRAIN_PRIMARY_SUB,false);
 	for(x=0; <= mapSize) {
 		for(y=0; <= mapSize) {
+			trQuestVarSetFromRand("rand", 0, 1, false);
 			noise = getPerlinNoise(perlin, x, y);
 			if (noise > 1.0) {
 				trChangeTerrainHeight(x, y, x, y, noise);
 				trPaintTerrain(x,y,x,y,TERRAIN_WALL,TERRAIN_WALL_SUB,false);
 			} else if (noise > -1.0) {
 				trPaintTerrain(x,y,x,y,TERRAIN_WALL_BASE,TERRAIN_WALL_BASE_SUB,false);
+				if (trQuestVarGet("rand") < 0.1) {
+					trQuestVarSetFromRand("rand", 1, 360, true);
+					trArmyDispatch("0,0","Rock Granite Big",1,1 + 2 * x, 0, 1 + 2 * y, trQuestVarGet("rand"), true);
+				}
 			} else if (noise < -2.0 && noise > -3.0) {
 				trPaintTerrain(x,y,x,y,TERRAIN_DIRT,TERRAIN_DIRT_SUB,false);
 			} else if (noise <= -3.0) {
 				trPaintTerrain(x,y,x,y,TERRAIN_ROAD,TERRAIN_ROAD_SUB,false);
+			} else {
+				if (trQuestVarGet("rand") < 0.1) {
+					trQuestVarSetFromRand("rand", 1, 360, true);
+					trArmyDispatch("0,0","Tundra Tree",1,1 + 2 * x, 0, 1 + 2 * y, trQuestVarGet("rand"), true);
+				}
 			}
 		}
 	}

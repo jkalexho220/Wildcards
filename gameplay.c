@@ -75,7 +75,6 @@ highFrequency
 		trSetUnitOrientation(dir, vector(0,1,0), true);
 		dir = rotationMatrix(dir, mCos, mSin);
 		pickUpWeapon(p, WEAPON_KNIFE, 5);
-		pickUpWeapon(p, WEAPON_PORTAL, 5);
 	}
 	trQuestVarSetFromRand("sound", 0, 6.283185, false);
 	angle = trQuestVarGet("sound");
@@ -104,6 +103,8 @@ highFrequency
 	}
 }
 
+int lastTimestamp = 0;
+
 rule gameplay_always
 inactive
 highFrequency
@@ -121,6 +122,9 @@ highFrequency
 	vector prev = vector(0,0,0);
 	vector dir = vector(0,0,0);
 	string proto = "";
+
+	float timediff = 0.001 * (trTimeMS() - lastTimestamp);
+	lastTimestamp = trTimeMS();
 
 	for(p=1; < cNumberPlayers) {
 		xSetPointer(dPlayerData, p);
@@ -171,6 +175,7 @@ highFrequency
 						}
 					}
 				}
+				// abilities
 				if (trPlayerResourceCount(p, "food") > 0) {
 					trPlayerGrantResources(p, "food", -9999);
 					shootWeapon(p);
@@ -182,6 +187,13 @@ highFrequency
 				if (trPlayerResourceCount(p, "gold") > 0) {
 					trPlayerGrantResources(p, "gold", -9999);
 					dash(p);
+				}
+				// snare
+				if (xGetBool(dPlayerData, xPlayerSnared)) {
+					if (trTimeMS() > xGetInt(dPlayerData, xPlayerSnareTime)) {
+						xSetBool(dPlayerData, xPlayerSnared, false);
+						trModifyProtounit(xGetString(dPlayerData, xPlayerProto), p, 55, 1);
+					}
 				}
 			}
 		} else if (trTimeMS() > xGetInt(dPlayerData, xPlayerRespawnTime)) {
@@ -449,6 +461,30 @@ highFrequency
 		}
 	}
 
+	// trap collision detection
+	for (i=xsMin(xGetDatabaseCount(dTraps), 5); > 0) {
+		xDatabaseNext(dTraps);
+		if (trTimeMS() > xGetInt(dTraps, xTrapArmTime)) {
+			prev = xGetVector(dTraps, xUnitPos);
+			for(p=1; < cNumberPlayers) {
+				xSetPointer(dPlayerData, p);
+				if (xGetBool(dPlayerData, xPlayerAlive)) {
+					pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
+					if (distanceBetweenVectors(pos, prev) < 2.0) {
+						snarePlayer(p, 2000);
+						xUnitSelectByID(dTraps, xUnitID);
+						trQuestVarSetFromRand("sound", 1, 3, true);
+						if (trUnitVisToPlayer()) {
+							trSoundPlayFN("crushmetal"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+						}
+						trUnitChangeProtoUnit("Dust Large");
+						xFreeDatabaseBlock(dTraps);
+					}
+				}
+			}
+		}
+	}
+
 	for(i=xGetDatabaseCount(dPortalShots); >0) {
 		xDatabaseNext(dPortalShots);
 		xSetVector(dPortalShots, xUnitPos, kbGetBlockPosition(""+xGetInt(dPortalShots, xUnitName), true));
@@ -626,14 +662,16 @@ highFrequency
 		trQuestVarSetFromRand("rand", 1, mapSize, true);
 		y = trQuestVarGet("rand");
 
-		trQuestVarSetFromRand("rand", 1, 3, true);
-		val = trQuestVarGet("rand");
-		trQuestVarSetFromRand("rand", 1, 3, true);
-		if (trQuestVarGet("rand") < val) {
-			val = trQuestVarGet("rand");
-		}
-
 		trQuestVarSetFromRand("rand", 2, WEAPON_TYPES, true);
+
+		val = weaponQuantity(1*trQuestVarGet("rand"));
+		trQuestVarSetFromRand("rand1", 1, val, true);
+		trQuestVarSetFromRand("rand2", 1, val, true);
+		if (trQuestVarGet("rand2") < trQuestVarGet("rand1")) {
+			trQuestVarSet("rand1", trQuestVarGet("rand2"));
+		}
+		val = trQuestVarGet("rand1");
+
 		spawnCollectible(perlinRoll(perlin, x, y, 1.0, 0.5), 1*trQuestVarGet("rand"), val);
 	}
 	processLaunchedUnit();

@@ -35,6 +35,10 @@ int xPlayerCamo = 0;
 
 int xPlayerProto = 0;
 
+int xPlayerSnared = 0;
+int xPlayerSnareTime = 0;
+int xPlayerSpeed = 0;
+
 // los frontier
 int xFrontierX = 0;
 int xFrontierY = 0;
@@ -105,6 +109,9 @@ int xLaunchedDest = 0;
 int xLaunchedTimeout = 0;
 int xLaunchedProto = 0;
 
+int dTraps = 0;
+int xTrapArmTime = 0;
+
 int initGenericProj(string name = "", float radius = 0) {
 	int db = xInitDatabase(name);
 	xInitAddInt(db, "name");
@@ -158,6 +165,10 @@ highFrequency
 	xPlayerDashCount = xInitAddInt(dPlayerData, "dashCount", 2);
 	xPlayerDashCooldown = xInitAddInt(dPlayerData, "dashCooldown");
 	xPlayerDashStep = xInitAddInt(dPlayerData, "dashStep");
+
+	xPlayerSnared = xInitAddBool(dPlayerData, "snared", false);
+	xPlayerSnareTime = xInitAddInt(dPlayerData, "snareTime");
+	xPlayerSpeed = xInitAddFloat(dPlayerData, "speed", 5.0);
 
 	dSpyRequests = xInitDatabase("spyRequests", 32);
 	xSpyRequestProto = xInitAddInt(dSpyRequests, "proto");
@@ -218,6 +229,12 @@ highFrequency
 	xPortalPos2 = xInitAddVector(dPortals, "pos2");
 	xPortalUse = xInitAddInt(dPortals, "use");
 	xPortalTimeout = xInitAddInt(dPortals, "timeout");
+
+	dTraps = xInitDatabase("traps");
+	xInitAddInt(dTraps, "name");
+	xInitAddInt(dTraps, "id");
+	xTrapArmTime = xInitAddInt(dTraps, "armTime");
+	xInitAddVector(dTraps, "pos");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

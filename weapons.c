@@ -1,11 +1,13 @@
 const int WEAPON_KNIFE = 1;
 const int WEAPON_GRAPPLING_HOOK = 2;
 const int WEAPON_PORTAL = 3;
-const int WEAPON_CAMO = 4;
-const int WEAPON_TRAP = 5;
-const int WEAPON_SMOKE_BOMB = 6;
+const int WEAPON_TRAP = 4;
+const int WEAPON_SMOKESCREEN = 5;
+const int WEAPON_SHRAPNEL_BOMB = 6;
+const int WEAPON_WALL = 7;
+const int WEAPON_SHIELD = 8;
 
-const int WEAPON_TYPES = 6;
+const int WEAPON_TYPES = 5;
 
 const int WEAPON_WILDCARD = 99;
 
@@ -24,13 +26,21 @@ string weaponName(int weapon = 0) {
 		{
 			name = "Grappling Hook";
 		}
-		case WEAPON_SMOKE_BOMB:
+		case WEAPON_SMOKESCREEN:
 		{
-			name = "Smoke Bomb";
+			name = "Smokescreen";
 		}
-		case WEAPON_CAMO:
+		case WEAPON_SHRAPNEL_BOMB:
 		{
-			name = "Camouflage";
+			name = "Shrapnel Bomb";
+		}
+		case WEAPON_WALL:
+		{
+			name = "Forcefield";
+		}
+		case WEAPON_SHIELD:
+		{
+			name = "Deflector Shield";
 		}
 		case WEAPON_TRAP:
 		{
@@ -60,17 +70,13 @@ void displayWeaponDetails(int weapon = 0) {
 		{
 			trChatSend(0, "Drags a player towards you or drags you towards a wall.");
 		}
-		case WEAPON_SMOKE_BOMB:
+		case WEAPON_SMOKESCREEN:
 		{
 			trChatSend(0, "Blocks line of sight for 5 seconds.");
 		}
-		case WEAPON_CAMO:
-		{
-			trChatSend(0, "Transform into a tree. Moving or attacking will reveal yourself.");
-		}
 		case WEAPON_TRAP:
 		{
-			trChatSend(0, "Deals 1 damage and stuns the player for a short duration.");
+			trChatSend(0, "Arms after 2.5 seconds. Prevents the player from moving for 1 second.");
 		}
 		case WEAPON_PORTAL:
 		{
@@ -79,6 +85,20 @@ void displayWeaponDetails(int weapon = 0) {
 		case WEAPON_WILDCARD:
 		{
 			trChatSend(0, "Whoever holds the Wildcard will be the Runner!");
+		}
+		case WEAPON_SHRAPNEL_BOMB:
+		{
+			trChatSend(0, "Explodes and releases shrapnel in all directions, dealing 1 damage.");
+		}
+		case WEAPON_WALL:
+		{
+			trChatSend(0, "Creates a barrier at your cursor (within LOS) for 5 seconds.");
+			trChatSend(0, "The barrier prevents players from walking through but it does not");
+			trChatSend(0, "prevent them from dashing or shooting projectiles through.");
+		}
+		case WEAPON_SHIELD:
+		{
+			trChatSend(0, "A shield blocks all projectiles that hit you for 3 seconds.");
 		}
 	}
 }
@@ -91,13 +111,9 @@ int weaponProto(int weapon = 0) {
 		{
 			proto = kbGetProtoUnitID("Ballista");
 		}
-		case WEAPON_SMOKE_BOMB:
+		case WEAPON_SMOKESCREEN:
 		{
 			proto = kbGetProtoUnitID("Sphinx");
-		}
-		case WEAPON_CAMO:
-		{
-			proto = kbGetProtoUnitID("Audrey");
 		}
 		case WEAPON_PORTAL:
 		{
@@ -107,10 +123,62 @@ int weaponProto(int weapon = 0) {
 		{
 			proto = kbGetProtoUnitID("Petrobolos");
 		}
+		case WEAPON_SHRAPNEL_BOMB:
+		{
+			proto = kbGetProtoUnitID("Fire Giant");
+		}
+		case WEAPON_WALL:
+		{
+			proto = kbGetProtoUnitID("Atlantis Wall Connector");
+		}
+		case WEAPON_SHIELD:
+		{
+			proto = kbGetProtoUnitID("Behemoth");
+		}
 		case WEAPON_WILDCARD:
 		{
 			proto = kbGetProtoUnitID("Garrison Flag Sky Passage");
 		}
 	}
 	return(proto);
+}
+
+int weaponQuantity(int weapon = 0) {
+	int count = 1;
+	switch(weapon)
+	{
+		case WEAPON_GRAPPLING_HOOK:
+		{
+			count = 2;
+		}
+		case WEAPON_SMOKESCREEN:
+		{
+			count = 2;
+		}
+		case WEAPON_PORTAL:
+		{
+			count = 1;
+		}
+		case WEAPON_TRAP:
+		{
+			count = 4;
+		}
+		case WEAPON_SHRAPNEL_BOMB:
+		{
+			count = 2;
+		}
+		case WEAPON_WALL:
+		{
+			count = 2;
+		}
+		case WEAPON_SHIELD:
+		{
+			count = 3;
+		}
+		case WEAPON_WILDCARD:
+		{
+			count = 1;
+		}
+	}
+	return(count);
 }

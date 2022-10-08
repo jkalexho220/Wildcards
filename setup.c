@@ -15,7 +15,7 @@ int TERRAIN_DIRT = 0;
 int TERRAIN_DIRT_SUB = 3;
 
 int TERRAIN_ROAD = 0;
-int TERRAIN_ROAD_SUB = 65;
+int TERRAIN_ROAD_SUB = 4;
 
 
 rule immediate
