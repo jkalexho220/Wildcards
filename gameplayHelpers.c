@@ -7,6 +7,8 @@ int wildcardNext = 0;
 int knifeCount = 0;
 int nextCollectible = 0;
 
+bool inPortal = false;
+
 void reselectMyself() {
 	uiClearSelection();
 	int p = trCurrentPlayer();
@@ -495,6 +497,7 @@ void switchWeapon(int p = 0) {
 
 void shootWeapon(int p = 0) {
 	if (trTimeMS() > xGetInt(dPlayerData, xPlayerShootCooldown)) {
+		vector pos = vector(0,0,0);
 		xSetInt(dPlayerData, xPlayerShootCooldown, trTimeMS() + SHOOT_COOLDOWN);
 		int db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
 		if (xGetDatabaseCount(db) > 0) {
@@ -535,9 +538,9 @@ void shootWeapon(int p = 0) {
 					xSetInt(dTraps, xUnitName, spawnObject(p, "Statue of Automaton Base"));
 					xSetInt(dTraps, xUnitID, kbGetBlockID(""+xGetInt(dTraps, xUnitName), true));
 					xSetVector(dTraps, xUnitPos, kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true));
-					xSetInt(dTraps, xTrapArmTime, trTimeMS() + 2000);
+					xSetInt(dTraps, xTrapArmTime, trTimeMS() + 1000);
 					xSetInt(dTraps, xUnitOwner, p);
-					trUnitHighlight(2.0, true);
+					trUnitHighlight(1.0, false);
 					if (trCurrentPlayer() == p) {
 						trSoundPlayFN("siegeselect.wav","1",-1,"","");
 						trSoundPlayFN("gatherpoint.wav","1",-1,"","");
@@ -555,6 +558,35 @@ void shootWeapon(int p = 0) {
 					xUnitSelectByID(dPlayerData, xPlayerUnitID);
 					if (trUnitVisToPlayer()) {
 						trSoundPlayFN("catapultattack.wav","1",-1,"","");
+					}
+				}
+				case WEAPON_SWORD:
+				{
+					xUnitSelect(dPlayerData, xPlayerDeflector);
+					trMutateSelected(kbGetProtoUnitID("Sphinx"));
+					trSetSelectedScale(0,0,0);
+					trSetSelectedUpVector(0,-1,0);
+					trUnitOverrideAnimation(39, 0, false, false, -1);
+					if (trUnitVisToPlayer()) {
+						trSoundPlayFN("sphinxspecialattack.wav","1",-1,"","");
+					}
+					xSetBool(dPlayerData, xPlayerWhirlwindActive, true);
+					xSetInt(dPlayerData, xPlayerWhirlwindTimeout, trTimeMS() + 1000);
+					pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
+					for(x=xGetDatabaseCount(dUnits); >0) {
+						xDatabaseNext(dUnits);
+						if (p != xGetInt(dUnits, xUnitOwner)) {
+							if (targetEligible(p)) {
+								if (distanceBetweenVectors(pos, xGetVector(dUnits, xUnitPos)) < 25.0) {
+									trQuestVarSetFromRand("sound", 1, 4, true);
+									xUnitSelectByID(dUnits, xUnitID);
+									if (trUnitVisToPlayer()) {
+										trSoundPlayFN("arrowonflesh"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+									}
+									trDamageUnit(1);
+								}
+							}
+						}
 					}
 				}
 			}

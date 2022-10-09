@@ -179,7 +179,6 @@ void addFrontier(int posX = 0, int posY = 0) {
 						trUnitSelectClear();
 						trUnitSelectByID(start + index);
 						trMutateSelected(kbGetProtoUnitID("Revealer to Player"));
-						//trUnitChangeProtoUnit("Revealer to Player");
 					}
 				}
 			}

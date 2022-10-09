@@ -31,6 +31,9 @@ int xPlayerIndex = 0;
 int xPlayerProjSpawner = 0;
 int xPlayerSpotlight = 0;
 int xPlayerDeflector = 0;
+int xPlayerWhirlwindActive = 0;
+int xPlayerWhirlwindTimeout = 0;
+
 int xPlayerCamo = 0;
 
 int xPlayerProto = 0;
@@ -96,10 +99,9 @@ int dPortalShots = 0;
 int dPortals = 0;
 int xPortalUnitsStart = 0;
 int xPortalUnitsEnd = 0;
-int xPortalPos1 = 0;
-int xPortalPos2 = 0;
+int xPortalStart = 0;
+int xPortalEnd = 0;
 int xPortalTimeout = 0;
-int xPortalUse = 0;
 
 int dLaunchedUnits = 0;
 int xLaunchedCar = 0;
@@ -167,6 +169,9 @@ highFrequency
 	xPlayerSpotlight = xInitAddInt(dPlayerData, "spotlight");
 	// xPlayerGrapplingHook = xInitAddInt(dPlayerData, "grapplingHook"); // you can have more than one grappling hook
 	xPlayerDeflector = xInitAddInt(dPlayerData, "deflector");
+	xPlayerWhirlwindActive = xInitAddBool(dPlayerData, "whirlwindActive");
+	xPlayerWhirlwindTimeout = xInitAddInt(dPlayerData, "whirlwindTimeout");
+
 	xPlayerCamo = xInitAddInt(dPlayerData, "camo");
 	
 	xPlayerThrowPos = xInitAddVector(dPlayerData, "throwPos");
@@ -241,9 +246,8 @@ highFrequency
 	dPortals = xInitDatabase("portals");
 	xPortalUnitsStart = xInitAddInt(dPortals, "unit1");
 	xPortalUnitsEnd = xInitAddInt(dPortals, "unit2");
-	xPortalPos1 = xInitAddVector(dPortals, "pos1");
-	xPortalPos2 = xInitAddVector(dPortals, "pos2");
-	xPortalUse = xInitAddInt(dPortals, "use");
+	xPortalStart = xInitAddVector(dPortals, "start");
+	xPortalEnd = xInitAddVector(dPortals, "end");
 	xPortalTimeout = xInitAddInt(dPortals, "timeout");
 
 	dTraps = xInitDatabase("traps");

@@ -3,9 +3,11 @@ const int WEAPON_GRAPPLING_HOOK = 2;
 const int WEAPON_PORTAL = 3;
 const int WEAPON_TRAP = 4;
 const int WEAPON_SMOKESCREEN = 5;
-const int WEAPON_CAMERA = 6;
+const int WEAPON_SWORD = 6;
+const int WEAPON_SNIPER = 7;
+const int WEAPON_CAMERA = 8;
 
-const int WEAPON_TYPES = 5;
+const int WEAPON_TYPES = 6;
 
 const int WEAPON_WILDCARD = 99;
 
@@ -38,11 +40,19 @@ string weaponName(int weapon = 0) {
 		}
 		case WEAPON_CAMERA:
 		{
-			name = "Camera";
+			name = "Obelisk";
+		}
+		case WEAPON_SNIPER:
+		{
+			name = "Longbow";
 		}
 		case WEAPON_WILDCARD:
 		{
 			name = "The Wildcard";
+		}
+		case WEAPON_SWORD:
+		{
+			name = "Whirlwind";
 		}
 	}
 	return(name);
@@ -67,18 +77,28 @@ void displayWeaponDetails(int weapon = 0) {
 		case WEAPON_TRAP:
 		{
 			trChatSend(0, "Arms after 2 seconds. Snares an enemy player for 2 seconds.");
+			trChatSend(0, "You can step on your own traps without triggering them.");
 		}
 		case WEAPON_PORTAL:
 		{
-			trChatSend(0, "Creates a portal through a wall.");
+			trChatSend(0, "Creates a one-way portal through a wall for 30 seconds.");
+			trChatSend(0, "Anyone can use the portal.");
 		}
 		case WEAPON_WILDCARD:
 		{
 			trChatSend(0, "Whoever holds the Wildcard will be the Runner!");
 		}
+		case WEAPON_SNIPER:
+		{
+			trChatSend(0, "Shoots a fast arrow that passes through walls and deals 2 damage.");
+		}
 		case WEAPON_CAMERA:
 		{
-			trChatSend(0, "");
+			trChatSend(0, "Gives vision in a circle that ignores walls. Can be destroyed.");
+		}
+		case WEAPON_SWORD:
+		{
+			trChatSend(0, "Deals 1 damage in a circle around you and then blocks knives for 1 second.");
 		}
 	}
 }
@@ -93,7 +113,7 @@ int weaponProto(int weapon = 0) {
 		}
 		case WEAPON_SMOKESCREEN:
 		{
-			proto = kbGetProtoUnitID("Sphinx");
+			proto = kbGetProtoUnitID("Terracotta Soldier");
 		}
 		case WEAPON_PORTAL:
 		{
@@ -106,6 +126,18 @@ int weaponProto(int weapon = 0) {
 		case WEAPON_WILDCARD:
 		{
 			proto = kbGetProtoUnitID("Garrison Flag Sky Passage");
+		}
+		case WEAPON_CAMERA:
+		{
+			proto = kbGetProtoUnitID("Outpost");
+		}
+		case WEAPON_SNIPER:
+		{
+			proto = kbGetProtoUnitID("Archer Atlantean");
+		}
+		case WEAPON_SWORD:
+		{
+			proto = kbGetProtoUnitID("Sphinx");
 		}
 	}
 	return(proto);
@@ -134,6 +166,18 @@ int weaponQuantity(int weapon = 0) {
 		case WEAPON_WILDCARD:
 		{
 			count = 1;
+		}
+		case WEAPON_CAMERA:
+		{
+			count = 1;
+		}
+		case WEAPON_SNIPER:
+		{
+			count = 3;
+		}
+		case WEAPON_SWORD:
+		{
+			count = 3;
 		}
 	}
 	return(count);
