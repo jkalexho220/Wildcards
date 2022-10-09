@@ -6,6 +6,7 @@ int wildcardNext = 0;
 
 int knifeCount = 0;
 int nextCollectible = 0;
+int nextCrate = 0;
 
 bool inPortal = false;
 
@@ -275,6 +276,67 @@ void paintSmokeTile(int x = 0, int y = 0, int timestamp = 5000) {
 		}
 		aiPlanSetUserVariableInt(smokeArray, x, y, timestamp);
 	}
+}
+
+string getCrateProto(int db = 0) {
+	string proto = "Ice Block";
+	switch(db)
+	{
+		case dFrostCrates:
+		{
+			proto = "Ice Block";
+		}
+		case dExplosiveCrates:
+		{
+			proto = "Ball of Fire Impact";
+		}
+	}
+	return(proto);
+}
+
+vector getCrateScale(int db = 0) {
+	vector scale = vector(1,1,1);
+	switch(db)
+	{
+		case dFrostCrates:
+		{
+			scale = vector(1.5, 1.5, 1.5);
+		}
+		case dExplosiveCrates:
+		{
+			scale = vector(1.0, 1.0, 1.0);
+		}
+	}
+	return(scale);
+}
+
+void spawnCrate(vector pos = vector(0,0,0), int db = 0, string proto = "Ice Block", vector scale = vector(1.5,1.5,1.5)) {
+	xAddDatabaseBlock(dUnits, true);
+	xSetInt(dUnits, xUnitName, trGetNextUnitScenarioNameNumber());
+	xSetBool(dUnits, xUnitLaunched, true);
+	xSetBool(dUnits, xUnitStationary, true);
+	xSetVector(dUnits, xUnitPos, vectorSnapToGrid(pos));
+	xAddDatabaseBlock(db, true);
+	xSetInt(db, xUnitName, trGetNextUnitScenarioNameNumber());
+	trArmyDispatch("0,0","Dwarf",3,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+	xSetInt(db, xCrateUnitsEnd, trGetNextUnitScenarioNameNumber());
+	xSetInt(db, xUnitID, kbGetBlockID(""+xGetInt(db, xUnitName), true));
+	xSetVector(db, xUnitPos, vectorToGrid(pos));
+	xUnitSelectByID(db, xUnitID);
+	trUnitChangeProtoUnit("Cinematic Block");
+	trUnitSelectClear();
+	trUnitSelect(""+(1 + xGetInt(db, xUnitName)), true);
+	trMutateSelected(kbGetProtoUnitID(proto));
+	trUnitOverrideAnimation(2,0,true,true,-1);
+	trSetSelectedScale(xsVectorGetX(scale),xsVectorGetY(scale),xsVectorGetZ(scale));
+	trUnitSelectClear();
+	trUnitSelect(""+(2 + xGetInt(db, xUnitName)), true);
+	trUnitChangeProtoUnit("Crate");
+	trUnitSelectClear();
+	trUnitSelect(""+(2 + xGetInt(db, xUnitName)), true);
+	trUnitSetAnimationPath("0,0,0,0,0,0,0");
+
+	xSetInt(dUnits, xUnitID, xGetInt(db, xUnitID));
 }
 
 int spawnObject(int p = 0, string proto = "") {

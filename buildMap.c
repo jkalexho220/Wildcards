@@ -37,11 +37,14 @@ highFrequency
 		}
 	}
 
+	frostArray = aiPlanCreate("frostArray", 8);
 	smokeArray = aiPlanCreate("smokeArray", 8);
 	for(x=0; < mapSize) {
 		aiPlanAddUserVariableInt(smokeArray, x, "smoke"+x, mapSize);
+		aiPlanAddUserVariableInt(frostArray, x, "frost"+x, mapSize);
 		for(y=0; < mapSize) {
 			aiPlanSetUserVariableInt(smokeArray, x, y, 0);
+			aiPlanSetUserVariableInt(frostArray, x, y, 0);
 		}
 	}
 

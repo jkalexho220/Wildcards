@@ -59,6 +59,12 @@ runImmediately
 		trPlayerGrantResources(p, "Favor", -999);
 	}
 
+	trSetCivAndCulture(0, 1, 0);
+
+	trModifyProtounit("Cinematic Block", 0, 0, 9999999999999999999.0);
+	trModifyProtounit("Cinematic Block", 0, 0, -9999999999999999999.0);
+	trModifyProtounit("Cinematic Block", 0, 0, 50);
+
 	trModifyProtounit("Revealer", 0, 2, 9999999999999999999.0);
 	trModifyProtounit("Revealer", 0, 2, -9999999999999999999.0);
 	trModifyProtounit("Revealer", 0, 2, 5);

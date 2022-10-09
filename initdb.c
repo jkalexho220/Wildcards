@@ -64,6 +64,7 @@ int xUnitID = 0;
 int xUnitOwner = 0;
 int xUnitPos = 0;
 int xUnitLaunched = 0;
+int xUnitStationary = 0;
 
 // projectiles
 int xProjDir = 0;
@@ -127,8 +128,20 @@ int xSmokeBombDest = 0;
 
 int frostArray = 0;
 int dFrostCrates = 0;
-int xFrostCrateStep = 0;
-int xFrostCrateTimeout = 0;
+int dExplosiveCrates = 0;
+
+int xCrateActive = 0;
+int xCrateTimeout = 0;
+int xCrateUnitsEnd = 0;
+
+int initGenericUnit(string name = "") {
+	int db = xInitDatabase(name);
+	xInitAddInt(db, "name");
+	xInitAddInt(db, "id");
+	xInitAddInt(db, "owner", 0);
+	xInitAddVector(db, "pos");
+	return(db);
+}
 
 int initGenericProj(string name = "", float radius = 0) {
 	int db = xInitDatabase(name);
@@ -204,6 +217,7 @@ highFrequency
 	xUnitOwner = xInitAddInt(dUnits, "owner");
 	xUnitPos = xInitAddVector(dUnits, "pos");
 	xUnitLaunched = xInitAddBool(dUnits, "launched", false);
+	xUnitStationary = xInitAddBool(dUnits, "stationary", false);
 
 	dKnives = initGenericProj("knives", 2.0);
 
@@ -250,11 +264,7 @@ highFrequency
 	xPortalEnd = xInitAddVector(dPortals, "end");
 	xPortalTimeout = xInitAddInt(dPortals, "timeout");
 
-	dTraps = xInitDatabase("traps");
-	xInitAddInt(dTraps, "name");
-	xInitAddInt(dTraps, "id");
-	xInitAddInt(dTraps, "owner");
-	xInitAddVector(dTraps, "pos");
+	dTraps = initGenericUnit("traps");
 	xTrapArmTime = xInitAddInt(dTraps, "armTime");
 	xTrapArmed = xInitAddBool(dTraps, "armed", false);
 
@@ -266,6 +276,13 @@ highFrequency
 
 	dSmokeBombs = initGenericProj("smokeBombs", 2.0);
 	xSmokeBombDest = xInitAddVector(dSmokeBombs, "destination");
+
+	dFrostCrates = initGenericUnit("frostCrates");
+	xCrateUnitsEnd = xInitAddInt(dFrostCrates, "units");
+	xCrateActive = xInitAddBool(dFrostCrates, "active", false);
+	xCrateTimeout = xInitAddInt(dFrostCrates, "timeout");
+	dExplosiveCrates = initGenericUnit("explosiveCrates");
+	xInitAddInt(dExplosiveCrates, "units");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

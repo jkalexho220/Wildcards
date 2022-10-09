@@ -75,7 +75,6 @@ highFrequency
 		trSetUnitOrientation(dir, vector(0,1,0), true);
 		dir = rotationMatrix(dir, mCos, mSin);
 		pickUpWeapon(p, WEAPON_KNIFE, 5);
-		pickUpWeapon(p, WEAPON_SWORD, 3);
 	}
 	trQuestVarSetFromRand("sound", 0, 6.283185, false);
 	angle = trQuestVarGet("sound");
@@ -134,7 +133,7 @@ highFrequency
 		xUnitSelectByID(dUnits, xUnitID);
 		if (trUnitAlive() == false) {
 			xFreeDatabaseBlock(dUnits);
-		} else {
+		} else if (xGetBool(dUnits, xUnitStationary) == false) {
 			xSetVector(dUnits, xUnitPos, kbGetBlockPosition(""+xGetInt(dUnits, xUnitName), true));
 		}
 	}
@@ -209,13 +208,19 @@ highFrequency
 					}
 				}
 
+				pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
+				x = xsVectorGetX(pos) / 2;
+				y = xsVectorGetZ(pos) / 2;
+				dist = 5.0 * xsPow(0.5, aiPlanGetUserVariableInt(frostArray, x, y));
+				trModifyProtounit(xGetString(dPlayerData, xPlayerProto), p, 1, dist - xGetFloat(dPlayerData, xPlayerSpeed));
+				xSetFloat(dPlayerData, xPlayerSpeed, dist);
+
 				if (xGetBool(dPlayerData, xPlayerWhirlwindActive)) {
 					if (trTimeMS() > xGetInt(dPlayerData, xPlayerWhirlwindTimeout)) {
 						xSetBool(dPlayerData, xPlayerWhirlwindActive, false);
 						xUnitSelect(dPlayerData, xPlayerDeflector);
 						trMutateSelected(kbGetProtoUnitID("Cinematic Block"));
 					} else {
-						pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
 						for(i=xGetDatabaseCount(dKnives); >0) {
 							xDatabaseNext(dKnives);
 							if (xGetInt(dKnives, xUnitOwner) != p) {
@@ -297,7 +302,10 @@ highFrequency
 							if (trUnitVisToPlayer()) {
 								trSoundPlayFN("arrowonflesh"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
 							}
+						} else {
+							spawnCollectible(vectorSnapToGrid(prev - dir), WEAPON_KNIFE);
 						}
+						xUnitSelectByID(dKnives, xUnitID);
 						trUnitChangeProtoUnit("Lightning Sparks ground");
 						xFreeDatabaseBlock(dKnives);
 						hit = true;
@@ -770,6 +778,100 @@ highFrequency
 
 		spawnCollectible(perlinRoll(perlin, x, y, 1.0, 0.5), 1*trQuestVarGet("rand"), val);
 	}
+	
+	// spawn random crates
+	if (trTime() > nextCrate) {
+		nextCrate = trTime() + xsPow(xsMax(0, xGetDatabaseCount(dFrostCrates) + xGetDatabaseCount(dExplosiveCrates) + 2), 2);
+		trQuestVarSetFromRand("rand", 1, mapSize, true);
+		x = trQuestVarGet("rand");
+		trQuestVarSetFromRand("rand", 1, mapSize, true);
+		y = trQuestVarGet("rand");
+
+		trQuestVarSetFromRand("rand", dFrostCrates, dExplosiveCrates, true);
+		val = trQuestVarGet("rand");
+
+		spawnCrate(perlinRoll(perlin, x, y, 1.0, 0.0), val, getCrateProto(val), getCrateScale(val));
+	}
+
+	// frost crates
+	dist = 2;
+	for(i=xGetDatabaseCount(dFrostCrates); >0) {
+		xDatabaseNext(dFrostCrates);
+		xUnitSelectByID(dFrostCrates, xUnitID);
+		if (xGetBool(dFrostCrates, xCrateActive)) {
+			if (trTimeMS() > xGetInt(dFrostCrates, xCrateTimeout)) {
+				for(j=xGetInt(dFrostCrates, xUnitName); < xGetInt(dFrostCrates, xCrateUnitsEnd)) {
+					trUnitSelectClear();
+					trUnitSelect(""+j, true);
+					trUnitDestroy();
+				}
+				pos = xGetVector(dFrostCrates, xUnitPos);
+				x = xsVectorGetX(pos);
+				y = xsVectorGetZ(pos);
+				for(j = -3; <= 3) {
+					for(k = -3; <= 3) {
+						if (j * j + k * k <= 9) {
+							aiPlanSetUserVariableInt(frostArray, x + j, y + k, aiPlanGetUserVariableInt(frostArray, x + j, y + k) - 1);
+						}
+					}
+				}
+				xFreeDatabaseBlock(dFrostCrates);
+			}
+		} else if (trUnitPercentDamaged() > 0) {
+			xSetBool(dFrostCrates, xCrateActive, true);
+			xSetInt(dFrostCrates, xCrateTimeout, trTimeMS() + 5000);
+
+			trUnitSelectClear();
+			trUnitSelect(""+(1 + xGetInt(dFrostCrates, xUnitName)), true);
+			trUnitChangeProtoUnit("Mist");
+			trUnitSelectClear();
+			trUnitSelect(""+(2 + xGetInt(dFrostCrates, xUnitName)), true);
+			trUnitOverrideAnimation(2,0,true,true,-1);
+			trMutateSelected(kbGetProtoUnitID("Frost Drift"));
+			trSetSelectedScale(1.25 * dist, 1, 1.6 * dist);
+			xUnitSelectByID(dFrostCrates, xUnitID);
+			if (trUnitVisToPlayer()) {
+				trSoundPlayFN("icemono.wav","1",-1,"","");
+				trSoundPlayFN("siegetowerdeath.wav","1",-1,"","");
+			}
+			trUnitChangeProtoUnit("Fireball Launch Damage Effect");
+			pos = xGetVector(dFrostCrates, xUnitPos);
+			x = xsVectorGetX(pos);
+			y = xsVectorGetZ(pos);
+			for(j = -3; <= 3) {
+				for(k = -3; <= 3) {
+					if (j * j + k * k <= 9) {
+						aiPlanSetUserVariableInt(frostArray, x + j, y + k, 1 + aiPlanGetUserVariableInt(frostArray, x + j, y + k));
+					}
+				}
+			}
+		}
+	}
+
+	// explosive crates
+	for(i=xGetDatabaseCount(dExplosiveCrates); >0) {
+		xDatabaseNext(dExplosiveCrates);
+		xUnitSelectByID(dExplosiveCrates, xUnitID);
+		if (trUnitPercentDamaged() > 0) {
+			trUnitSelectClear();
+			trUnitSelect(""+(1 + xGetInt(dExplosiveCrates, xUnitName)), true);
+			trDamageUnitPercent(100);
+			trUnitChangeProtoUnit("Meteorite");
+			trUnitSelectClear();
+			trUnitSelect(""+(2 + xGetInt(dExplosiveCrates, xUnitName)), true);
+			trUnitChangeProtoUnit("Meteor Impact Ground");
+			xUnitSelectByID(dExplosiveCrates, xUnitID);
+			if (trUnitVisToPlayer()) {
+				trSoundPlayFN("meteordustcloud.wav","1",-1,"","");
+				trSoundPlayFN("siegetowerdeath.wav","1",-1,"","");
+			}
+			trUnitChangeProtoUnit("Fireball Launch Damage Effect");
+			// shoot projectiles in all directions
+			pos = gridToVector(xGetVector(dExplosiveCrates, xUnitPos));
+			xFreeDatabaseBlock(dExplosiveCrates);
+		}
+	}
+
 	processLaunchedUnit();
 
 	// portals
