@@ -1,3 +1,4 @@
+int spyreset = 0;
 int spysearch = 0;
 int wildcard = -1;
 int wildcardStep = 0;
@@ -138,6 +139,8 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	addFrontier(x * 2, y * 2);
 	cleanFrontier();
 
+	debugLog(xGetString(dPlayerData, xPlayerProto) + ":" + xGetInt(dPlayerData, xPlayerUnitName) + ":" + trGetNextUnitScenarioNameNumber());
+
 	xUnitSelectByID(dPlayerData, xPlayerUnitID);
 	spyEffect(kbGetProtoUnitID("Cinematic Block"), 0, xsVectorSet(dPlayerData, xPlayerProjSpawner, p));
 	spyEffect(kbGetProtoUnitID("Cinematic Block"), 0, xsVectorSet(dPlayerData, xPlayerDeflector, p));
@@ -264,7 +267,6 @@ void paintSmokeTile(int x = 0, int y = 0, int timestamp = 5000) {
 			xAddDatabaseBlock(dSmokeTiles, true);
 			xSetInt(dSmokeTiles, xSmokeTileX, x);
 			xSetInt(dSmokeTiles, xSmokeTileY, y);
-			xSetInt(dSmokeTiles, xSmokeTileTimeout, timestamp);
 			xSetInt(dSmokeTiles, xSmokeTileTerrainType, trGetTerrainType(x, y));
 			xSetInt(dSmokeTiles, xSmokeTileTerrainSub, trGetTerrainSubType(x, y));
 			trPaintTerrain(x, y, x, y, 2, 5, false); // cliff plain
@@ -278,6 +280,15 @@ int spawnObject(int p = 0, string proto = "") {
 	xSetPointer(dPlayerData, p);
 	xUnitSelect(dPlayerData, xPlayerProjSpawner);
 	trUnitChangeProtoUnit("Hero Norse");
+
+	if (trGetNextUnitScenarioNameNumber() + 1 == next) {
+		debugLog("Missing proj spawner!");
+		xUnitSelectByID(dPlayerData, xPlayerUnitID);
+		spyEffect(kbGetProtoUnitID("Cinematic Block"), 0, xsVectorSet(dPlayerData, xPlayerProjSpawner, p));
+		next = trGetNextUnitScenarioNameNumber();
+		vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName), true);
+		trArmyDispatch(""+p+",0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+	}
 
 	trUnitSelectClear();
 	trUnitSelect(""+next, true);
@@ -421,9 +432,6 @@ void displayWeapons(int p = 0) {
 }
 
 bool pickUpWeapon(int p = 0, int weapon = 0, int count = 0) {
-	if (weapon == WEAPON_KNIFE) {
-		knifeCount = knifeCount - 1;
-	}
 	xSetPointer(dPlayerData, p);
 	int db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
 	bool done = false;
@@ -570,6 +578,7 @@ void dash(int p = 0) {
 				xSetInt(dPlayerData, xPlayerDashCooldown, trTimeMS() + 15000);
 			}
 			vector pos = kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName), true);
+			vector prev = pos;
 			vector step = getUnitVector(pos, xGetVector(dPlayerData, xPlayerDashPos), 2.0);
 			vector dest = pos;
 			float dist = xsMin(distanceBetweenVectors(pos, xGetVector(dPlayerData, xPlayerDashPos), false), 8);
@@ -584,11 +593,12 @@ void dash(int p = 0) {
 					trUnitChangeProtoUnit("Arkantos Boost SFX");
 				}
 			}
+			step = step * 0.5;
 			int next = trGetNextUnitScenarioNameNumber();
 			trArmyDispatch(""+p+",0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
 			trArmySelect(""+p+",0");
 			trMutateSelected(kbGetProtoUnitID("Transport Ship Greek"));
-			trSetUnitOrientation(step * 0.5, vector(0,1,0), true);
+			trSetUnitOrientation(step, vector(0,1,0), true);
 			xUnitSelectByID(dPlayerData, xPlayerUnitID);
 			trImmediateUnitGarrison(""+next);
 			trUnitChangeProtoUnit(xGetString(dPlayerData, xPlayerProto));
@@ -598,6 +608,27 @@ void dash(int p = 0) {
 			displayWeapons(p);
 			if (trCurrentPlayer() == p) {
 				trSoundPlayFN("sphinxteleportout.wav","1",-1,"","");
+			}
+			for(j=xGetDatabaseCount(dUnits); >0) {
+				xDatabaseNext(dUnits);
+				if (xGetInt(dUnits, xUnitOwner) == p) {
+					continue;
+				} else if (targetEligible(p)) {
+					if (rayCollision(dUnits, prev, step, dist, 4.0)) {
+						pos = kbGetBlockPosition(""+xGetInt(dUnits, xUnitName), true);
+						trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+						trArmySelect("0,0");
+						trUnitChangeProtoUnit("Lightning Sparks");
+						xUnitSelectByID(dUnits, xUnitID);
+						if (xGetInt(dUnits, xUnitOwner) > 0) {
+							trQuestVarSetFromRand("sound", 1, 4, true);
+							if (trUnitVisToPlayer()) {
+								trSoundPlayFN("arrowonflesh"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+							}
+						}
+						trDamageUnit(1);
+					}
+				}
 			}
 		}
 	}
@@ -632,6 +663,7 @@ highFrequency
 						debugLog("spy error N/A: " + 1*xsVectorGetX(dest) + "," + 1*xsVectorGetY(dest) + "," + 1*xsVectorGetZ(dest));
 					}
 					xFreeDatabaseBlock(dSpyRequests);
+					spyreset = 0;
 				} else {
 					debugLog("Spy Buffer is empty");
 				}
@@ -664,6 +696,14 @@ highFrequency
 			{
 				debugLog("spysearch: " + i);
 			}
+		}
+	}
+	if (xGetDatabaseCount(dSpyRequests) > 0) {
+		spyreset = spyreset + 1;
+		if (spyreset >= 10) {
+			debugLog("Spy reset. Failed requests: " + xGetDatabaseCount(dSpyRequests));
+			xClearDatabase(dSpyRequests);
+			spyreset = 0;
 		}
 	}
 	spysearch = trGetNextUnitScenarioNameNumber();

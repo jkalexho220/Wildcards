@@ -50,7 +50,7 @@ int MALLOC = 0;
 int ARRAYS = 0;
 int mNumArrays = 0;
 
-bool debugIsOn = true;
+bool debugIsOn = false;
 
 void debugLog(string msg = "") {
 	if (debugIsOn) {

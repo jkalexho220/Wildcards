@@ -26,6 +26,10 @@ runImmediately
 	xsDisableSelf();
 	trSetUnitIdleProcessing(false);
 
+	if (trCurrentPlayer() == 1) {
+		debugIsOn = true;
+	}
+
 	gadgetUnreal("ScoreDisplay");
 	gadgetUnreal("GodPowers");
 	gadgetUnreal("tributedlg-sendButton");

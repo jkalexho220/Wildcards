@@ -364,6 +364,8 @@ highFrequency
 
 	loadAllDataMultiplayer();
 
+	trLetterBox(true);
+
 	trSoundPlayFN("favordump.wav","1",-1,"","");
 
 	xsEnableRule(NEXT_TRIGGER_NAME);

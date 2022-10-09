@@ -75,7 +75,6 @@ highFrequency
 		trSetUnitOrientation(dir, vector(0,1,0), true);
 		dir = rotationMatrix(dir, mCos, mSin);
 		pickUpWeapon(p, WEAPON_KNIFE, 5);
-		pickUpWeapon(p, WEAPON_SMOKESCREEN, 5);
 	}
 	trQuestVarSetFromRand("sound", 0, 6.283185, false);
 	angle = trQuestVarGet("sound");
@@ -210,6 +209,7 @@ highFrequency
 			pos = vectorToGrid(prev + dir * 0.8 * mapSize);
 			spawnPlayer(p, perlinRoll(perlin, xsVectorGetX(pos), xsVectorGetZ(pos), 2, -2.0));
 			pickUpWeapon(p, WEAPON_KNIFE, 5);
+			pickUpWeapon(p, WEAPON_PORTAL, 1);
 			if (trCurrentPlayer() == p) {
 				proto = xGetString(dPlayerData, xPlayerProto, p);
 				uiFindType(proto);
@@ -286,8 +286,9 @@ highFrequency
 						if (rayCollision(dKnives, prev, dir, dist, xGetFloat(dKnives, xProjRadius))) {
 							xUnitSelectByID(dKnives, xUnitID);
 							trUnitChangeProtoUnit("Lightning Sparks ground");
-							spawnCollectible(vectorSnapToGrid(xGetVector(dKnives, xProjPrev) - xGetVector(dKnives, xProjDir) * 2.0), WEAPON_KNIFE);
+							spawnCollectible(vectorSnapToGrid(xGetVector(dKnives, xProjPrev) - xGetVector(dKnives, xProjDir)), WEAPON_KNIFE);
 							xFreeDatabaseBlock(dKnives);
+							debugLog("first knife gone");
 							hit = true;
 							break;
 						}
@@ -295,14 +296,16 @@ highFrequency
 				}
 				xSetPointer(dKnives, pointer);
 				if (hit) {
+					debugLog("second knife gone");
 					trQuestVarSetFromRand("sound", 1, 6, true);
 					xUnitSelectByID(dKnives, xUnitID);
 					if (trUnitVisToPlayer()) {
 						trSoundPlayFN("metalslice"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
 					}
 					trUnitChangeProtoUnit("Lightning Sparks ground");
-					spawnCollectible(vectorSnapToGrid(xGetVector(dKnives, xProjPrev) - xGetVector(dKnives, xProjDir) * 2.0), WEAPON_KNIFE);
+					spawnCollectible(vectorSnapToGrid(xGetVector(dKnives, xProjPrev) - xGetVector(dKnives, xProjDir)), WEAPON_KNIFE);
 					xFreeDatabaseBlock(dKnives);
+					break;
 				}
 			}
 			if (hit == false) {
@@ -578,6 +581,9 @@ highFrequency
 			if (xGetBool(dPlayerData, xPlayerAlive)) {
 				if (distanceBetweenVectors(xGetVector(dPlayerData, xPlayerPos), xGetVector(dCollectibles, xUnitPos)) < 15.0) {
 					if (pickUpWeapon(p, xGetInt(dCollectibles, xCollectibleType), xGetInt(dCollectibles, xCollectibleCount))) { 
+						if (xGetInt(dCollectibles, xCollectibleType) == WEAPON_KNIFE) {
+							knifeCount = knifeCount - 1;
+						}
 						xUnitSelect(dCollectibles, xCollectibleObject);
 						trUnitChangeProtoUnit("Fireball Launch Damage Effect");
 						xUnitSelect(dCollectibles, xCollectiblePad);
@@ -607,6 +613,20 @@ highFrequency
 				displayWildcardDetails();
 				wildcardStep = 1;
 				wildcardNext = trTimeMS() + 3000;
+				prev = xGetVector(dPlayerData, xPlayerPos, wildcard);
+				for(p=1; < cNumberPlayers) {
+					if (p == wildcard) {
+						continue;
+					} else if (xGetBool(dPlayerData, xPlayerAlive, p)) {
+						pos = xGetVector(dPlayerData, xPlayerPos, p);
+						if (distanceBetweenVectors(pos, prev) < 900.0) {
+							dir = getUnitVector(prev, pos, 30.0);
+							pos = pos + dir;
+							xSetPointer(dUnits, xGetInt(dPlayerData, xPlayerIndex, p));
+							launchUnit(dUnits, pos);
+						}
+					}
+				}
 			}
 		}
 		case 1:
@@ -665,8 +685,8 @@ highFrequency
 		if ((distanceBetweenVectors(xGetVector(dSmokeBombs, xSmokeBombDest), prev) < 9.0) || terrainIsType(pos, TERRAIN_WALL, TERRAIN_WALL_SUB)) {
 			prev = vectorToGrid(prev);
 			val = trTimeMS() + 5000;
-			for(x= -5; < 5) {
-				for(y= -5; < 5) {
+			for(x= -4; < 4) {
+				for(y= -4; < 4) {
 					if (xsPow(x, 2) + xsPow(y, 2) <= 25.0) {
 						paintSmokeTile(x + xsVectorGetX(prev), y + xsVectorGetZ(prev), val);
 					}
@@ -695,7 +715,8 @@ highFrequency
 	}
 
 	// spawn random items
-	if (((xGetDatabaseCount(dCollectibles) - knifeCount) < (cNumberPlayers + 6))) {
+	if (trTime() > nextCollectible) {
+		nextCollectible = trTime() + xsPow(xsMax(0, xGetDatabaseCount(dCollectibles) - knifeCount - cNumberPlayers), 2);
 		trQuestVarSetFromRand("rand", 1, mapSize, true);
 		x = trQuestVarGet("rand");
 		trQuestVarSetFromRand("rand", 1, mapSize, true);

@@ -76,7 +76,7 @@ void displayWeaponDetails(int weapon = 0) {
 		}
 		case WEAPON_TRAP:
 		{
-			trChatSend(0, "Arms after 2.5 seconds. Prevents the player from moving for 1 second.");
+			trChatSend(0, "Arms after 1 second. Prevents the player from moving for 2 seconds.");
 		}
 		case WEAPON_PORTAL:
 		{

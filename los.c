@@ -287,7 +287,7 @@ highFrequency
 	xsDisableSelf();
 
 	%
-	for(p=1; < cNumberNonGaiaPlayers) {
+	for(p=1; <= cNumberNonGaiaPlayers) {
 		code("trStringQuestVarSet(\"p"+p+"name\", \""+rmGetPlayerName(p)+"\");");
 	}
 	%
