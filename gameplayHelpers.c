@@ -535,8 +535,9 @@ void shootWeapon(int p = 0) {
 					xSetInt(dTraps, xUnitName, spawnObject(p, "Statue of Automaton Base"));
 					xSetInt(dTraps, xUnitID, kbGetBlockID(""+xGetInt(dTraps, xUnitName), true));
 					xSetVector(dTraps, xUnitPos, kbGetBlockPosition(""+xGetInt(dPlayerData, xPlayerUnitName, p), true));
-					xSetInt(dTraps, xTrapArmTime, trTimeMS() + 1000);
-					trUnitHighlight(1.0, true);
+					xSetInt(dTraps, xTrapArmTime, trTimeMS() + 2000);
+					xSetInt(dTraps, xUnitOwner, p);
+					trUnitHighlight(2.0, true);
 					if (trCurrentPlayer() == p) {
 						trSoundPlayFN("siegeselect.wav","1",-1,"","");
 						trSoundPlayFN("gatherpoint.wav","1",-1,"","");

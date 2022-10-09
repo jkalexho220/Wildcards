@@ -468,23 +468,31 @@ highFrequency
 	// trap collision detection
 	for (i=xsMin(xGetDatabaseCount(dTraps), 5); > 0) {
 		xDatabaseNext(dTraps);
-		if (trTimeMS() > xGetInt(dTraps, xTrapArmTime)) {
+		if (xGetBool(dTraps, xTrapArmed)) {
 			prev = xGetVector(dTraps, xUnitPos);
 			for(p=1; < cNumberPlayers) {
-				xSetPointer(dPlayerData, p);
-				if (xGetBool(dPlayerData, xPlayerAlive)) {
-					pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
-					if (distanceBetweenVectors(pos, prev) < 2.0) {
-						snarePlayer(p, 2000);
-						xUnitSelectByID(dTraps, xUnitID);
-						trQuestVarSetFromRand("sound", 1, 3, true);
-						if (trUnitVisToPlayer()) {
-							trSoundPlayFN("crushmetal"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+				if (p != xGetInt(dTraps, xUnitOwner)) {
+					xSetPointer(dPlayerData, p);
+					if (xGetBool(dPlayerData, xPlayerAlive)) {
+						pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
+						if (distanceBetweenVectors(pos, prev) < 3.0) {
+							snarePlayer(p, 2000);
+							xUnitSelectByID(dTraps, xUnitID);
+							trQuestVarSetFromRand("sound", 1, 3, true);
+							if (trUnitVisToPlayer()) {
+								trSoundPlayFN("crushmetal"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+							}
+							trUnitChangeProtoUnit("Dust Large");
+							xFreeDatabaseBlock(dTraps);
 						}
-						trUnitChangeProtoUnit("Dust Large");
-						xFreeDatabaseBlock(dTraps);
 					}
 				}
+			}
+		} else if (trTimeMS() > xGetInt(dTraps, xTrapArmTime)) {
+			xSetBool(dTraps, xTrapArmed, true);
+			xUnitSelectByID(dTraps, xUnitID);
+			if (trCurrentPlayer() != xGetInt(dTraps, xUnitOwner)) {
+				trUnitHighlight(9999, false);
 			}
 		}
 	}
@@ -620,7 +628,7 @@ highFrequency
 					} else if (xGetBool(dPlayerData, xPlayerAlive, p)) {
 						pos = xGetVector(dPlayerData, xPlayerPos, p);
 						if (distanceBetweenVectors(pos, prev) < 900.0) {
-							dir = getUnitVector(prev, pos, 30.0);
+							dir = getUnitVector(prev, pos, 50.0);
 							pos = pos + dir;
 							xSetPointer(dUnits, xGetInt(dPlayerData, xPlayerIndex, p));
 							launchUnit(dUnits, pos);
@@ -648,15 +656,16 @@ highFrequency
 			if (xGetDatabaseCount(dGoldMines) == 0) {
 				pos = xGetVector(dPlayerData, xPlayerPos, wildcard);
 				prev = xsVectorSet(mapSize, 0, mapSize);
-				dir = getUnitVector(prev, pos, 0.8 * mapSize);
+				dir = getUnitVector(prev, pos, mapSize);
 				for(i=0; <3) {
 					dir = rotationMatrix(dir, 0.0, 1.0);
+					trQuestVarSetFromRand("rand", 0.3, 0.8, false);
 					if (i == 1) {
 						val = 3;
 					} else {
 						val = 2;
 					}
-					spawnGoldMine(prev + dir, val);
+					spawnGoldMine(prev + dir * trQuestVarGet("rand"), val);
 				}
 				trSoundPlayFN("plentybirth.wav","1",-1,"","");
 			}
@@ -687,7 +696,7 @@ highFrequency
 			val = trTimeMS() + 5000;
 			for(x= -4; < 4) {
 				for(y= -4; < 4) {
-					if (xsPow(x, 2) + xsPow(y, 2) <= 25.0) {
+					if (xsPow(x, 2) + xsPow(y, 2) <= 16.0) {
 						paintSmokeTile(x + xsVectorGetX(prev), y + xsVectorGetZ(prev), val);
 					}
 				}

@@ -20,7 +20,7 @@ highFrequency
 				trPaintTerrain(x,y,x,y,TERRAIN_WALL,TERRAIN_WALL_SUB,false);
 			} else if (noise > -1.0) {
 				trPaintTerrain(x,y,x,y,TERRAIN_WALL_BASE,TERRAIN_WALL_BASE_SUB,false);
-				if (trQuestVarGet("rand") < 0.1) {
+				if (trQuestVarGet("rand") < 0.05) {
 					trQuestVarSetFromRand("rand", 1, 360, true);
 					trArmyDispatch("0,0","Rock Granite Big",1,1 + 2 * x, 0, 1 + 2 * y, trQuestVarGet("rand"), true);
 				}

@@ -111,6 +111,7 @@ int xLaunchedProto = 0;
 
 int dTraps = 0;
 int xTrapArmTime = 0;
+int xTrapArmed = 0;
 
 int smokeArray = 0;
 int dSmokeTiles = 0;
@@ -121,6 +122,11 @@ int xSmokeTileTerrainSub = 0;
 
 int dSmokeBombs = 0;
 int xSmokeBombDest = 0;
+
+int frostArray = 0;
+int dFrostCrates = 0;
+int xFrostCrateStep = 0;
+int xFrostCrateTimeout = 0;
 
 int initGenericProj(string name = "", float radius = 0) {
 	int db = xInitDatabase(name);
@@ -243,8 +249,10 @@ highFrequency
 	dTraps = xInitDatabase("traps");
 	xInitAddInt(dTraps, "name");
 	xInitAddInt(dTraps, "id");
-	xTrapArmTime = xInitAddInt(dTraps, "armTime");
+	xInitAddInt(dTraps, "owner");
 	xInitAddVector(dTraps, "pos");
+	xTrapArmTime = xInitAddInt(dTraps, "armTime");
+	xTrapArmed = xInitAddBool(dTraps, "armed", false);
 
 	dSmokeTiles = xInitDatabase("smoke");
 	xSmokeTileX = xInitAddInt(dSmokeTiles, "x");
