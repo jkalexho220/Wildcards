@@ -86,7 +86,7 @@ void earnPoints(int p = 0, int val = 0) {
 
 
 bool targetEligible(int p = 0) {
-	return((p == wildcard) || (xGetInt(dUnits, xUnitOwner) == wildcard) || (xGetInt(dUnits, xUnitOwner) == 0));
+	return((p == wildcard) || (xGetInt(dUnits, xUnitOwner) == wildcard) || ((xGetInt(dUnits, xUnitOwner) * p) == 0));
 }
 
 /*
@@ -366,6 +366,19 @@ int spawnObject(int p = 0, string proto = "") {
 	trUnitSelect(""+next, true);
 	trMutateSelected(kbGetProtoUnitID(proto));
 	return(next);
+}
+
+void spawnGenericProjAtPos(int p = 0, int db = 0, string proto = "", vector pos = vector(0,0,0), vector dir = vector(0,0,0)) {
+	xAddDatabaseBlock(db, true);
+	xSetInt(db, xUnitName, trGetNextUnitScenarioNameNumber());
+	trArmyDispatch(""+p+",0","Dwarf",1,xsVectorGetX(pos),0,xsVectorGetZ(pos),0,true);
+	trArmySelect(""+p+",0");
+	trMutateSelected(kbGetProtoUnitID(proto));
+	trSetUnitOrientation(dir, vector(0,1,0), true);
+	xSetInt(db, xUnitID, kbGetBlockID(""+xGetInt(db, xUnitName), true));
+	xSetInt(db, xUnitOwner, p);
+	xSetVector(db, xProjPrev, pos);
+	xSetVector(db, xProjDir, dir);
 }
 
 void spawnGenericProj(int p = 0, int db = 0, string proto = "", vector pos = vector(0,0,0), vector dir = vector(0,0,0)) {

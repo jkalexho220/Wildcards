@@ -134,6 +134,8 @@ int xCrateActive = 0;
 int xCrateTimeout = 0;
 int xCrateUnitsEnd = 0;
 
+int dPellets = 0;
+
 int initGenericUnit(string name = "") {
 	int db = xInitDatabase(name);
 	xInitAddInt(db, "name");
@@ -283,6 +285,8 @@ highFrequency
 	xCrateTimeout = xInitAddInt(dFrostCrates, "timeout");
 	dExplosiveCrates = initGenericUnit("explosiveCrates");
 	xInitAddInt(dExplosiveCrates, "units");
+
+	dPellets = initGenericProj("pellets", 2.0);
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

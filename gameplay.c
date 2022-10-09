@@ -790,7 +790,7 @@ highFrequency
 		trQuestVarSetFromRand("rand", dFrostCrates, dExplosiveCrates, true);
 		val = trQuestVarGet("rand");
 
-		spawnCrate(perlinRoll(perlin, x, y, 1.0, 0.0), val, getCrateProto(val), getCrateScale(val));
+		spawnCrate(perlinRoll(perlin, x, y, 1.0, -1.0), val, getCrateProto(val), getCrateScale(val));
 	}
 
 	// frost crates
@@ -867,8 +867,81 @@ highFrequency
 			}
 			trUnitChangeProtoUnit("Fireball Launch Damage Effect");
 			// shoot projectiles in all directions
-			pos = gridToVector(xGetVector(dExplosiveCrates, xUnitPos));
+			prev = gridToVector(xGetVector(dExplosiveCrates, xUnitPos));
+			dir = vector(1,0,0);
 			xFreeDatabaseBlock(dExplosiveCrates);
+
+			for(j=xGetDatabaseCount(dUnits); >0) {
+				xDatabaseNext(dUnits);
+				if (distanceBetweenVectors(xGetVector(dUnits, xUnitPos), prev) <= 36.0) {
+					trDamageUnit(3);
+				}
+			}
+
+			for(j=24; >0) {
+				spawnGenericProjAtPos(0, dPellets, "Petosuchus Projectile", prev, dir);
+				xUnitSelectByID(dPellets, xUnitID);
+				trUnitHighlight(999, false);
+				pos = vectorSetAsTargetVector(prev, dir, 2.0 * mapSize * mapSize);
+				trUnitMoveToPoint(xsVectorGetX(pos),0,xsVectorGetZ(pos),-1,false);
+				dir = rotationMatrix(dir, 0.965926, 0.258819);
+			}
+		}
+	}
+
+	// pellet pos
+	for(i=xGetDatabaseCount(dPellets); >0) {
+		xDatabaseNext(dPellets);
+		pos = kbGetBlockPosition(""+xGetInt(dPellets, xUnitName), true);
+		xSetVector(dPellets, xUnitPos, pos);
+		if (terrainIsType(vectorToGrid(pos), TERRAIN_WALL, TERRAIN_WALL_SUB)) {
+			trQuestVarSetFromRand("sound", 1, 3, true);
+			xUnitSelectByID(dPellets, xUnitID);
+			if (trUnitVisToPlayer()) {
+				trSoundPlayFN("mine"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+			}
+			trUnitChangeProtoUnit("Lightning Sparks ground");
+			xFreeDatabaseBlock(dPellets);
+		}
+	}
+
+	// pellet collision detection
+	hit = false;
+	for(i=xGetDatabaseCount(dPellets); >0) {
+		xDatabaseNext(dPellets);
+		pos = xGetVector(dPellets, xUnitPos);
+		prev = xGetVector(dPellets, xProjPrev);
+		dist = distanceBetweenVectors(pos, prev);
+		if (dist > 1.0) {
+			p = xGetInt(dPellets, xUnitOwner);
+			dist = xsSqrt(dist);
+			dir = xGetVector(dPellets, xProjDir);
+			for(j=xGetDatabaseCount(dUnits); >0) {
+				xDatabaseNext(dUnits);
+				if (xGetInt(dUnits, xUnitOwner) == p) {
+					continue;
+				} else if (targetEligible(p)) {
+					if (rayCollision(dUnits, prev, dir, dist, xGetFloat(dPellets, xProjRadius))) {
+						xUnitSelectByID(dUnits, xUnitID);
+						trDamageUnit(1);
+						xUnitSelectByID(dPellets, xUnitID);
+						if (xGetInt(dUnits, xUnitOwner) > 0) {
+							trQuestVarSetFromRand("sound", 1, 4, true);
+							if (trUnitVisToPlayer()) {
+								trSoundPlayFN("arrowonflesh"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+							}
+						}
+						xUnitSelectByID(dPellets, xUnitID);
+						trUnitChangeProtoUnit("Lightning Sparks ground");
+						xFreeDatabaseBlock(dPellets);
+						hit = true;
+						break;
+					}
+				}
+			}
+			if (hit == false) {
+				xSetVector(dPellets, xProjPrev, pos);
+			}
 		}
 	}
 

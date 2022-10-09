@@ -137,6 +137,7 @@ highFrequency
 
 		modifyProjectile("Stymph Bird Feather", p, 20.0);
 		modifyProjectile("Wadjet Spit", p, 20.0);
+		modifyProjectile("Petosuchus Projectile", p, 20.0);
 
 		trModifyProtounit("Lancer Hero", p, 5, 99);
 
@@ -148,6 +149,7 @@ highFrequency
 
 		trModifyProtounit("Dwarf", p, 55, 4);
 	}
+	modifyProjectile("Petosuchus Projectile", 0, 20.0);
 }
 
 
