@@ -4,6 +4,10 @@ float interpolatePerlin(float start = 0, float end = 1, float percentage = 0) {
 	//return((end - start) * percentage + start);
 }
 
+/*
+Generate Perlin Noise graph and return an integer index of the graph. Use this integer
+as input for the other PerlinNoise functions
+*/
 int generatePerlinNoise(int size = 50, int granularity = 5) {
 	int db = aiPlanCreate("perlinNoise", 8);
 	int meta = zNewArray(mInt, 4, "perlinMeta");

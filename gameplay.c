@@ -682,7 +682,7 @@ highFrequency
 					trChatSend(0, "<color=1,1,1>Other players can now damage you and you can also damage them!</color>");
 				} else {
 					trChatSend(0, "<color=1,1,1>Stop the Wildcard from reaching the treasure!</color>");
-					trChatSend(0, "<color=1,1,1>You can now damage the Wildcard. The Wildcard can also damage you.</color>");
+					trChatSend(0, "<color=1,1,1>You can now damage the Wildcard and they can also damage you.</color>");
 				}
 			}
 		}
@@ -740,6 +740,18 @@ highFrequency
 			if (trUnitVisToPlayer()) {
 				trSoundPlayFN("argusfreezeattack.wav","1",-1,"","");
 				trSoundPlayFN("shockwave.wav","1",-1,"","");
+			}
+			for(p=1; < cNumberPlayers) {
+				if (trUnitHasLOS(p)) {
+					xSetPointer(dPlayerData, p);
+					pos = vectorToGrid(xGetVector(dPlayerData, xPlayerPos));
+					x = xsVectorGetX(pos);
+					y = xsVectorGetZ(pos);
+					removeFrontier(x, y, false);
+					addFrontier(x, y);
+					cleanFrontier();
+				}
+				xUnitSelectByID(dSmokeBombs, xUnitID);
 			}
 			trUnitChangeProtoUnit("Undermine Building Destruction SFX");
 			xFreeDatabaseBlock(dSmokeBombs);
