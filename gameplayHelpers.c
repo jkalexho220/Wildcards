@@ -130,7 +130,7 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	xSetInt(dPlayerData, xPlayerDashCount, 2);
 
 	xSetInt(dPlayerData, xPlayerUnitName, trGetNextUnitScenarioNameNumber());
-	trArmyDispatch(""+p+",0", xGetString(dPlayerData, xPlayerProto), 1, xsVectorGetX(pos), 0, xsVectorGetZ(pos), 0, true);
+	trArmyDispatch(""+p+",0", xGetString(dPlayerData, xPlayerProto), 1, xsVectorGetX(pos), 0, xsVectorGetZ(pos), 225, true);
 	xSetInt(dPlayerData, xPlayerUnitID, kbGetBlockID(""+xGetInt(dPlayerData, xPlayerUnitName), true));
 	xSetBool(dPlayerData, xPlayerAlive, true);
 	xSetVector(dPlayerData, xPlayerPos, pos);
@@ -624,6 +624,7 @@ void shootWeapon(int p = 0) {
 				case WEAPON_SMOKESCREEN:
 				{
 					shootGenericProj(p, dSmokeBombs, "Petrobolos Shot", xGetVector(dPlayerData, xPlayerThrowPos));
+					xSetInt(dSmokeBombs, xProjTimeout, trTimeMS() + 5000);
 					xUnitSelectByID(dSmokeBombs, xUnitID);
 					trUnitChangeProtoUnit("Petrobolos Shot");
 					xUnitSelectByID(dSmokeBombs, xUnitID);

@@ -70,6 +70,7 @@ int xUnitStationary = 0;
 int xProjDir = 0;
 int xProjPrev = 0;
 int xProjRadius = 0;
+int xProjTimeout = 0;
 
 int dKnives = 0;
 
@@ -154,6 +155,7 @@ int initGenericProj(string name = "", float radius = 0) {
 	xProjRadius = xInitAddFloat(db, "radius", radius);
 	xProjDir = xInitAddVector(db, "dir");
 	xProjPrev = xInitAddVector(db, "prev");
+	xProjTimeout = xInitAddInt(db, "timeout");
 	return(db);
 }
 

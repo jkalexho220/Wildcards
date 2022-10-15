@@ -1,5 +1,5 @@
 // performs perlin roll first
-void spawnGoldMine(vector pos = vector(0,0,0), int val = 0) {
+vector spawnGoldMine(vector pos = vector(0,0,0), int val = 0) {
 	pos = perlinRoll(perlin, 0 + xsVectorGetX(pos) / 2, 0 + xsVectorGetZ(pos) / 2, 1, -5.0);
 	trMinimapFlare(trCurrentPlayer(), 5.0, pos, true);
 	xAddDatabaseBlock(dGoldMines, true);
@@ -43,6 +43,8 @@ void spawnGoldMine(vector pos = vector(0,0,0), int val = 0) {
 
 	xUnitSelect(dGoldMines, xGoldMineHolder);
 	trMutateSelected(kbGetProtoUnitID("Wadjet Spit"));
+
+	return(pos);
 }
 
 void removeGoldMine() {

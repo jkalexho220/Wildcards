@@ -47,9 +47,9 @@ float getPerlinNoise(int meta = 0, int x = 0, int y = 0) {
 	return(total);
 }
 
-bool coordinatesInPerlin(int meta = 0, int x = 0, int y = 0) {
+bool coordinatesInPerlin(int meta = 0, int x = 0, int y = 0, int padding = 0) {
 	int size = zGetInt(meta, 3);
-	return(x >= 0 && y >= 0 && x <= size && y <= size);
+	return(x >= padding && y >= padding && x <= size - padding && y <= size - padding);
 }
 
 /*
@@ -58,7 +58,7 @@ As though we were rolling a marble down a hill until it reaches below a certain 
 Input: x and y coordinates of where the marble will drop in the perlin grid
 Returns a position in vector coordinates.
 */
-vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float height = 0, bool debug = false) {
+vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 1, float height = 0, int padding = 5, bool debug = false) {
 	vector pos = xsVectorSet(x, 0, y);
 	vector dir = xsVectorSet(stepSize, 0, 0);
 	vector prev = vector(0,0,0);
@@ -77,7 +77,7 @@ vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 2, float he
 					continue;
 				} else {
 					temp = pos + dir;
-					if (coordinatesInPerlin(meta, 0 + xsVectorGetX(temp), 0 + xsVectorGetZ(temp))) {
+					if (coordinatesInPerlin(meta, 0 + xsVectorGetX(temp), 0 + xsVectorGetZ(temp), padding)) {
 						current = getPerlinNoise(meta, 0 + xsVectorGetX(temp), 0 + xsVectorGetZ(temp));
 						if (current < best) {
 							best = current;

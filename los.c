@@ -280,10 +280,15 @@ void cleanFrontier() {
 }
 
 rule setup_los
-inactive
+active
 highFrequency
 {
 	xsDisableSelf();
+
+	trLetterBox(true);
+	trUIFadeToColor(0,0,0,0,0,true);
+	ambientColor(0,0,0);
+	sunColor(0,0,0);
 
 	%
 	for(p=1; <= cNumberNonGaiaPlayers) {
@@ -319,6 +324,7 @@ highFrequency
 		trArmyDispatch(""+p+",0","Victory Marker",1,1,0,1,0,true);
 	}
 
+	/*
 	if (aiIsMultiplayer()) {
 		//  data load stuff
 		for(i=0; < 32 * (cNumberPlayers - 1)) {
@@ -327,6 +333,7 @@ highFrequency
 			trUnitDestroy();
 		}
 	}
+	*/
 
 	xsEnableRule("Z_cin_00");
 }

@@ -50,7 +50,9 @@ highFrequency
 	xsDisableSelf();
 	startPos = perlinRoll(perlin, mapSize / 2, mapSize / 2, 1, -10.0);
 
-	xsEnableRule("gameplay_start");
+	xsEnableRule("ysearch");
+
+	//xsEnableRule("gameplay_start");
 
 	// spawn the hotkey units
 	for(i=EVENT_BUILD_HOUSE; <= EVENT_BUILD_STOREHOUSE) {
@@ -92,7 +94,6 @@ highFrequency
 	spysearch = trGetNextUnitScenarioNameNumber();
 
 	xsEnableRule("track_los");
-	xsEnableRule("ysearch");
 	xsEnableRule("gameplay_always");
 
 	trSetFogAndBlackmap(true, false);
@@ -101,6 +102,11 @@ highFrequency
 	for(p=1; < cNumberPlayers) {
 		displayWeapons(p);
 	}
+
+	trMusicPlayCurrent();
+	trPlayNextMusicTrack();
+
+	trMessageSetText("Find the Spotlight to become the Wildcard!");
 }
 
 int lastTimestamp = 0;
@@ -726,7 +732,7 @@ highFrequency
 		prev = kbGetBlockPosition(""+xGetInt(dSmokeBombs, xUnitName), true);
 		dir = xGetVector(dSmokeBombs, xProjDir);
 		pos = vectorToGrid(prev + dir * 3.0);
-		if ((distanceBetweenVectors(xGetVector(dSmokeBombs, xSmokeBombDest), prev) < 9.0) || terrainIsType(pos, TERRAIN_WALL, TERRAIN_WALL_SUB)) {
+		if ((distanceBetweenVectors(xGetVector(dSmokeBombs, xSmokeBombDest), prev) < 9.0) || terrainIsType(pos, TERRAIN_WALL, TERRAIN_WALL_SUB) || trTimeMS() > xGetInt(dSmokeBombs, xProjTimeout)) {
 			prev = vectorToGrid(prev);
 			val = trTimeMS() + 5000;
 			for(x= -4; < 4) {

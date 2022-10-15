@@ -26,7 +26,7 @@ runImmediately
 	xsDisableSelf();
 	trSetUnitIdleProcessing(false);
 
-	if (trCurrentPlayer() == 1) {
+	if (trGetScenarioUserData(0) == 1) {
 		debugIsOn = true;
 	}
 
@@ -112,6 +112,7 @@ void modifyProjectile(string proto = "", int p = 0, float speed = 20.0) {
 	trModifyProtounit(proto, p, 1, 9999999999999999999.0);
 	trModifyProtounit(proto, p, 1, -9999999999999999999.0);
 	trModifyProtounit(proto, p, 1, speed);
+	trModifyProtounit(proto, p, 8, -99); // lifespan
 }
 
 rule delayed_modify
@@ -206,6 +207,8 @@ highFrequency
 	}
 }
 
+int cinNext = 0;
+int cinStep = 0;
 
 rule Z_cin_02
 inactive
@@ -215,15 +218,28 @@ highFrequency
 	if (trTime() > cActivationTime + 5) {
 		trModifyProtounit("Curse SFX", 1, 8, -8);
 		
-		trCameraCut(vector(145,70,26), vector(0,-0.7071,0.7071), vector(0,0.7071,0.7071), vector(1,0,0));
+		trCameraCut(xsVectorSet(mapSize,50,mapSize - 50), vector(0,-0.7071,0.7071), vector(0,0.7071,0.7071), vector(1,0,0));
 		trLetterBox(false);
 
 		trUIFadeToColor(0,0,0,0,0,false);
 
-		xsEnableRule("build_map");
+		trSoundPlayFN("cinematics\9_in\music.mp3","1",-1,"","");
+
+		trQuestVarSet("skipButton", trGetNextUnitScenarioNameNumber());
+		trArmyDispatch("1,0", "Statue of Lightning", 1, mapSize, 0, mapSize, 180, true);
+
+		trMessageSetText("Host: Delete the statue to skip the cinematic.");
+
+		trCounterAddTime("counter", 10, 1, "Watch Cinematic", -1);
+
+		xsEnableRule("intro_cinematic");
+		xsEnableRule("skip_cinematic");
+		cinNext = trTime() + 10;
+
+		//xsEnableRule("build_map");
 		xsEnableRule("delayed_modify");
 
-		trSetLighting("default", 0.1);
+		trSetLighting("default", 0);
 		xsDisableSelf();
 	}
 }
