@@ -258,7 +258,7 @@ highFrequency
 			pos = vectorToGrid(prev + dir * 0.8 * mapSize);
 			spawnPlayer(p, perlinRoll(perlin, xsVectorGetX(pos), xsVectorGetZ(pos), 2, -2.0));
 			pickUpWeapon(p, WEAPON_KNIFE, 5);
-			pickUpWeapon(p, WEAPON_PORTAL, 1);
+			// pickUpWeapon(p, WEAPON_PORTAL, 1);
 			if (trCurrentPlayer() == p) {
 				proto = xGetString(dPlayerData, xPlayerProto, p);
 				uiFindType(proto);
@@ -509,31 +509,49 @@ highFrequency
 	// trap collision detection
 	for (i=xsMin(xGetDatabaseCount(dTraps), 5); > 0) {
 		xDatabaseNext(dTraps);
-		if (xGetBool(dTraps, xTrapArmed)) {
-			prev = xGetVector(dTraps, xUnitPos);
-			for(p=1; < cNumberPlayers) {
-				if (p != xGetInt(dTraps, xUnitOwner)) {
-					xSetPointer(dPlayerData, p);
-					if (xGetBool(dPlayerData, xPlayerAlive)) {
-						pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
-						if (distanceBetweenVectors(pos, prev) < 3.0) {
-							snarePlayer(p, 2000);
-							xUnitSelectByID(dTraps, xUnitID);
-							trQuestVarSetFromRand("sound", 1, 3, true);
-							if (trUnitVisToPlayer()) {
-								trSoundPlayFN("crushmetal"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+		switch(xGetInt(dTraps, xTrapArmed)) 
+		{
+			case 0:
+			{
+				if (trTimeMS() > xGetInt(dTraps, xTrapArmTime)) {
+					xSetInt(dTraps, xTrapArmed, 1);
+					xUnitSelectByID(dTraps, xUnitID);
+					if (trCurrentPlayer() == xGetInt(dTraps, xUnitOwner)) {
+						trUnitHighlight(9999, false);
+					}
+				}
+			}
+			case 1:
+			{
+				prev = xGetVector(dTraps, xUnitPos);
+				for(p=1; < cNumberPlayers) {
+					if (p != xGetInt(dTraps, xUnitOwner)) {
+						xSetPointer(dPlayerData, p);
+						if (xGetBool(dPlayerData, xPlayerAlive)) {
+							pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
+							if (distanceBetweenVectors(pos, prev) < 3.0) {
+								snarePlayer(p, 2000);
+								xUnitSelectByID(dTraps, xUnitID);
+								trQuestVarSetFromRand("sound", 1, 3, true);
+								if (trUnitVisToPlayer() || (xGetInt(dTraps, xUnitOwner) == trCurrentPlayer())) {
+									trSoundPlayFN("crushmetal"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
+								}
+								trUnitChangeProtoUnit("Revealer to Player");
+								xSetInt(dTraps, xTrapArmed, 2);
+								xSetInt(dTraps, xTrapArmTime, trTimeMS() + 2000);
+								break;
 							}
-							trUnitChangeProtoUnit("Dust Large");
-							xFreeDatabaseBlock(dTraps);
 						}
 					}
 				}
 			}
-		} else if (trTimeMS() > xGetInt(dTraps, xTrapArmTime)) {
-			xSetBool(dTraps, xTrapArmed, true);
-			xUnitSelectByID(dTraps, xUnitID);
-			if (trCurrentPlayer() == xGetInt(dTraps, xUnitOwner)) {
-				trUnitHighlight(9999, false);
+			case 2:
+			{
+				if (trTimeMS() > xGetInt(dTraps, xTrapArmTime)) {
+					xUnitSelectByID(dTraps, xUnitID);
+					trUnitChangeProtoUnit("Dust Small");
+					xFreeDatabaseBlock(dTraps);
+				}
 			}
 		}
 	}
@@ -547,9 +565,10 @@ highFrequency
 			hit = false;
 			for(j=mapSize * mapSize; >0) {
 				pos = pos + dir;
+				start = vectorToGrid(pos);
 				if (xsVectorGetX(pos) < 0 || xsVectorGetZ(pos) < 0 || xsVectorGetX(pos) > (2.0 * mapSize) || xsVectorGetZ(pos) > (2.0 * mapSize)) {
 					break;
-				} else if (terrainIsType(vectorToGrid(pos), TERRAIN_WALL, TERRAIN_WALL_SUB) == false) {
+				} else if ((terrainIsType(start, TERRAIN_WALL, TERRAIN_WALL_SUB) == false) && (getPerlinNoise(perlin, xsVectorGetX(start), xsVectorGetZ(start)) < wallHeight)) {
 					hit = true;
 					break;
 				}

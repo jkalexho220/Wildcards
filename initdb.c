@@ -270,7 +270,7 @@ highFrequency
 
 	dTraps = initGenericUnit("traps");
 	xTrapArmTime = xInitAddInt(dTraps, "armTime");
-	xTrapArmed = xInitAddBool(dTraps, "armed", false);
+	xTrapArmed = xInitAddInt(dTraps, "armed", 0);
 
 	dSmokeTiles = xInitDatabase("smoke");
 	xSmokeTileX = xInitAddInt(dSmokeTiles, "x");

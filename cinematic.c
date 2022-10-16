@@ -127,7 +127,7 @@ highFrequency
 				xFreeDatabaseBlock(dCollectibles);
 				cinNext = trTime() + 8;
 				xDatabaseNext(dCollectibles);
-				trSoundPlayFN("","1",-1,"Zenophobia:The first player to reach 20 points wins! Good luck and have fun!","icons\infantry g hoplite icon 64");
+				trSoundPlayFN("","1",-1,"Zenophobia:The first player to reach " + victoryCount + " points wins! Good luck and have fun!","icons\infantry g hoplite icon 64");
 				trCameraCut(vector(-9.292889,14.14214,-9.292889) + startPos, vector(0.5,-0.707107,0.5), vector(0.5,0.707107,0.5), vector(0.707107,0,-0.707107));
 				trackInsert();
 				trackPlay(7000, -1);

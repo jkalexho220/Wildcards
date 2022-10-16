@@ -80,8 +80,69 @@ void displayWildcardDetails() {
 	trOverlayText(trStringQuestVarGet("p"+wildcard+"name") + " - " + xGetInt(dPlayerData, xPlayerPoints, wildcard), 9999, 10, 12, 1600);
 }
 
+void mergeSort(int pid = 0, int temp = 0, int start = 0, int middle = 0, int end = 0) {
+	int firstPointer = start;
+	int secondPointer = middle;
+	int first = 0; 
+	int second = 0;
+	int index = 0;
+	if (end - start > 1) {
+		mergeSort(pid, temp, start, (start + middle) / 2, middle);
+		mergeSort(pid, temp, middle, (middle + end) / 2, end);
+	}
+	while(firstPointer < middle) {
+		first = xGetInt(dPlayerData, xPlayerPoints, zGetInt(pid, firstPointer));
+		while(secondPointer < end) {
+			second = xGetInt(dPlayerData, xPlayerPoints, zGetInt(pid, secondPointer));
+			if (second > first) {
+				zSetInt(temp, index, zGetInt(pid, secondPointer));
+				index = index + 1;
+				secondPointer = secondPointer + 1;
+			} else {
+				break;
+			}
+		}
+		zSetInt(temp, index, zGetInt(pid, firstPointer));
+		index = index + 1;
+		firstPointer = firstPointer + 1;
+	}
+	while(secondPointer < end) {
+		zSetInt(temp, index, zGetInt(pid, secondPointer));
+		index = index + 1;
+		secondPointer = secondPointer + 1;
+	}
+	for(i=0; < (end - start)) {
+		zSetInt(pid, i + start, zGetInt(temp, i));
+	}
+}
+
+void endGame(int victor = 0) {
+	int pid = zNewArray(mInt, cNumberPlayers - 1, "players");
+	int temp = zNewArray(mInt, cNumberPlayers - 1, "temp");
+	for(p=1; < cNumberPlayers) {
+		zSetInt(pid, p - 1, p);
+		if (victor == p) {
+			trSetPlayerWon(p);
+		} else {
+			trSetPlayerDefeated(p);
+		}
+	}
+	mergeSort(pid, temp, 0, cNumberPlayers / 2, cNumberPlayers - 1);
+	trChatSend(0, "<color=1,1,1><u>Final Scores</u></color>");
+	for(x=0; < cNumberPlayers - 1) {
+		p = zGetInt(pid, x);
+		trChatSend(0, "<color={Playercolor("+p+")}>"+xGetInt(dPlayerData, xPlayerPoints, p)+" - {Playername("+p+")}");
+	}
+	trShowWinLose(trStringQuestVarGet("p"+victor+"name") + " is victorious!", "ui\thunder2.wav", "1");
+	trEndGame();
+}
+
 void earnPoints(int p = 0, int val = 0) {
 	xSetInt(dPlayerData, xPlayerPoints, xGetInt(dPlayerData, xPlayerPoints, p) + val, p);
+	trPlayerGrantResources(p, "favor", val);
+	if (xGetInt(dPlayerData, xPlayerPoints, p) >= victoryCount) {
+		endGame(p);
+	}
 }
 
 

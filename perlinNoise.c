@@ -84,8 +84,6 @@ vector perlinRoll(int meta = 0, int x = 0, int y = 0, int stepSize = 1, float he
 							found = true;
 							choice = dir;
 						}
-					} else {
-						debugLog("Off the map: " + 1*xsVectorGetX(temp) + ", " + 1*xsVectorGetZ(temp));
 					}
 				}
 			}

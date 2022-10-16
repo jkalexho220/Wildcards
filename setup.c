@@ -1,7 +1,7 @@
 %
 code("int mapSize = " + 1*sqrt(MAP_SIZE_STATIC + cNumberNonGaiaPlayers * MAP_SIZE_DYNAMIC) + ";");
 %
-
+/*
 int TERRAIN_WALL = 2;
 int TERRAIN_WALL_SUB = 1;
 
@@ -16,7 +16,24 @@ int TERRAIN_DIRT_SUB = 3;
 
 int TERRAIN_ROAD = 0;
 int TERRAIN_ROAD_SUB = 4;
+*/
 
+int TERRAIN_WALL = 2;
+int TERRAIN_WALL_SUB = 0;
+
+int TERRAIN_WALL_BASE = 0;
+int TERRAIN_WALL_BASE_SUB = 65;
+
+int TERRAIN_PRIMARY = 0;
+int TERRAIN_PRIMARY_SUB = 2;
+
+int TERRAIN_DIRT = 0;
+int TERRAIN_DIRT_SUB = 3;
+
+int TERRAIN_ROAD = 0;
+int TERRAIN_ROAD_SUB = 4;
+
+const int victoryCount = 20;
 
 rule immediate
 active
@@ -59,7 +76,8 @@ runImmediately
 		trPlayerGrantResources(p, "Favor", -999);
 	}
 
-	trSetCivAndCulture(0, 1, 0);
+	trSetCivAndCulture(0, 10, 3);
+	trTechSetStatus(0, 405, 4);
 
 	trModifyProtounit("Cinematic Block", 0, 0, 9999999999999999999.0);
 	trModifyProtounit("Cinematic Block", 0, 0, -9999999999999999999.0);
