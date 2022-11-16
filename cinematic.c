@@ -75,7 +75,7 @@ highFrequency
 				trQuestVarSetFromRand("rand", 0, 6.283185, false);
 				dir = vectorSetFromAngle(trQuestVarGet("rand"));
 				wildcard = 1;
-				pos = spawnGoldMine(xsVectorSet(mapSize, 0, mapSize) + dir * mapSize, 3);
+				pos = spawnGoldMine(xsVectorSet(mapSize, 0, mapSize) + dir * mapSize * 0.5, 3);
 				lookAt(xsVectorGetX(pos), xsVectorGetZ(pos));
 				trackInsert();
 				trackPlay(7000, -1);
@@ -111,7 +111,7 @@ highFrequency
 			{
 				trSoundPlayFN("","1",-1,"Zenophobia:If the Wildcard dies, they will drop a Spotlight, and whoever grabs it becomes the new Wildcard!","icons\infantry g hoplite icon 64");
 				dir = vectorSetFromAngle(trQuestVarGet("rand"));
-				pos = xsVectorSet(mapSize / 2, 0, mapSize / 2) - dir * mapSize / 2;
+				pos = xsVectorSet(mapSize / 2, 0, mapSize / 2) - dir * mapSize / 4;
 				pos = perlinRoll(perlin, xsVectorGetX(pos), xsVectorGetZ(pos));
 				spawnCollectible(pos, WEAPON_WILDCARD, 1);
 				trCameraCut(vector(-8.485,12,-8.485) * 2.0 + pos, vector(0.5,-0.707107,0.5), vector(0.5,0.707107,0.5), vector(0.707107,0,-0.707107));
@@ -126,7 +126,6 @@ highFrequency
 				trUnitDestroy();
 				xFreeDatabaseBlock(dCollectibles);
 				cinNext = trTime() + 8;
-				xDatabaseNext(dCollectibles);
 				trSoundPlayFN("","1",-1,"Zenophobia:The first player to reach " + victoryCount + " points wins! Good luck and have fun!","icons\infantry g hoplite icon 64");
 				trCameraCut(vector(-9.292889,14.14214,-9.292889) + startPos, vector(0.5,-0.707107,0.5), vector(0.5,0.707107,0.5), vector(0.707107,0,-0.707107));
 				trackInsert();

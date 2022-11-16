@@ -49,13 +49,14 @@ highFrequency
 				}
 				if (overlap < 10) {
 					trPaintTerrain(x - 1, y - 1, x + 1, y + 1, TERRAIN_WALL, TERRAIN_WALL_SUB, false);
-					trQuestVarSetFromRand("sound", 0, 2, true);
+					trQuestVarSetFromRand("sound", 0, 3, true);
 					buildingType = trQuestVarGet("sound");
-					trQuestVarSetFromRand("sound", 0, 2, true);
+					trQuestVarSetFromRand("sound", 0, 3, true);
 					if (buildingType > trQuestVarGet("sound")) {
 						buildingType = trQuestVarGet("sound");
 					}
-					trArmyDispatch("0,0","Dwarf",1,x * 2 + 1, 0, y * 2 + 1, 180, true);
+
+					trArmyDispatch("0,0","Militia",1,x * 2 + 1, 0, y * 2 + 1, 180, true);
 					trArmySelect("0,0");
 					switch(buildingType)
 					{
@@ -65,11 +66,15 @@ highFrequency
 						}
 						case 1:
 						{
-							trMutateSelected(kbGetProtoUnitID("Dock"));
+							trMutateSelected(kbGetProtoUnitID("Guild"));
 						}
 						case 2:
 						{
-							trMutateSelected(kbGetProtoUnitID("Guild"));
+							trMutateSelected(kbGetProtoUnitID("Sky Passage"));
+						}
+						case 3:
+						{
+							trMutateSelected(kbGetProtoUnitID("Lighthouse"));
 						}
 					}
 

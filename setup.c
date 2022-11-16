@@ -34,6 +34,7 @@ int TERRAIN_ROAD = 0;
 int TERRAIN_ROAD_SUB = 4;
 
 const int victoryCount = 20;
+const float CAMERA_RANGE = 12;
 
 rule immediate
 active
@@ -164,8 +165,16 @@ highFrequency
 		trModifyProtounit("Lancer Hero", p, 2, -9999999999999999999.0);
 		trModifyProtounit("Lancer Hero", p, 2, 4.0);
 
+		trModifyProtounit("Outpost", p, 0, 9999999999999999999.0);
+		trModifyProtounit("Outpost", p, 0, -9999999999999999999.0);
+		trModifyProtounit("Outpost", p, 0, 1.0);
+		trModifyProtounit("Outpost", p, 2, 9999999999999999999.0);
+		trModifyProtounit("Outpost", p, 2, -9999999999999999999.0);
+		trModifyProtounit("Outpost", p, 2, CAMERA_RANGE);
+
 		trModifyProtounit("Catapult Shot", p, 8, -99);
 
+		trModifyProtounit("Militia", p, 55, 4);
 		trModifyProtounit("Dwarf", p, 55, 4);
 	}
 	modifyProjectile("Petosuchus Projectile", 0, 20.0);

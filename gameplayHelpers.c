@@ -89,34 +89,35 @@ void mergeSort(int pid = 0, int temp = 0, int start = 0, int middle = 0, int end
 	if (end - start > 1) {
 		mergeSort(pid, temp, start, (start + middle) / 2, middle);
 		mergeSort(pid, temp, middle, (middle + end) / 2, end);
-	}
-	while(firstPointer < middle) {
-		first = xGetInt(dPlayerData, xPlayerPoints, zGetInt(pid, firstPointer));
-		while(secondPointer < end) {
-			second = xGetInt(dPlayerData, xPlayerPoints, zGetInt(pid, secondPointer));
-			if (second > first) {
-				zSetInt(temp, index, zGetInt(pid, secondPointer));
-				index = index + 1;
-				secondPointer = secondPointer + 1;
-			} else {
-				break;
+		while(firstPointer < middle) {
+			first = xGetInt(dPlayerData, xPlayerPoints, zGetInt(pid, firstPointer));
+			while(secondPointer < end) {
+				second = xGetInt(dPlayerData, xPlayerPoints, zGetInt(pid, secondPointer));
+				if (second > first) {
+					zSetInt(temp, index, zGetInt(pid, secondPointer));
+					index = index + 1;
+					secondPointer = secondPointer + 1;
+				} else {
+					break;
+				}
 			}
+			zSetInt(temp, index, zGetInt(pid, firstPointer));
+			index = index + 1;
+			firstPointer = firstPointer + 1;
 		}
-		zSetInt(temp, index, zGetInt(pid, firstPointer));
-		index = index + 1;
-		firstPointer = firstPointer + 1;
-	}
-	while(secondPointer < end) {
-		zSetInt(temp, index, zGetInt(pid, secondPointer));
-		index = index + 1;
-		secondPointer = secondPointer + 1;
-	}
-	for(i=0; < (end - start)) {
-		zSetInt(pid, i + start, zGetInt(temp, i));
+		while(secondPointer < end) {
+			zSetInt(temp, index, zGetInt(pid, secondPointer));
+			index = index + 1;
+			secondPointer = secondPointer + 1;
+		}
+		for(i=0; < (end - start)) {
+			zSetInt(pid, i + start, zGetInt(temp, i));
+		}
 	}
 }
 
 void endGame(int victor = 0) {
+	uiClearCursor();
 	int pid = zNewArray(mInt, cNumberPlayers - 1, "players");
 	int temp = zNewArray(mInt, cNumberPlayers - 1, "temp");
 	for(p=1; < cNumberPlayers) {
@@ -200,6 +201,7 @@ void spawnPlayer(int p = 0, vector pos = vector(0,0,0)) {
 	int x = xsVectorGetX(pos) / 4;
 	int y = xsVectorGetZ(pos) / 4;
 
+	debugLog("Frontier size: " + xGetDatabaseCount(xGetInt(dPlayerData, xPlayerLosFrontier)));
 	addFrontier(x * 2, y * 2);
 	cleanFrontier();
 
@@ -221,17 +223,17 @@ vector vectorSetAsTargetVector(vector from = vector(0,0,0), vector dir = vector(
 	if (xsVectorGetX(target) < 0) {
 		scale = xsVectorGetX(target) / (xsVectorGetX(target) - xsVectorGetX(from));
 		target = xsVectorSet(0,0, xsVectorGetZ(target) + scale * (xsVectorGetZ(from) - xsVectorGetZ(target)));
-	} else if (xsVectorGetX(target) > (mapSize * 2 + 1)) {
-		scale = (xsVectorGetX(target) - (mapSize * 2 + 1)) / (xsVectorGetX(target) - xsVectorGetX(from));
-		target = xsVectorSet(mapSize * 2 + 1,0,xsVectorGetZ(target) + scale * (xsVectorGetZ(from) - xsVectorGetZ(target)));
+	} else if (xsVectorGetX(target) > (mapSize * 2 + 2)) {
+		scale = (xsVectorGetX(target) - (mapSize * 2 + 2)) / (xsVectorGetX(target) - xsVectorGetX(from));
+		target = xsVectorSet(mapSize * 2 + 2,0,xsVectorGetZ(target) + scale * (xsVectorGetZ(from) - xsVectorGetZ(target)));
 	}
 	
 	if (xsVectorGetZ(target) < 0) {
 		scale = xsVectorGetZ(target) / (xsVectorGetZ(target) - xsVectorGetZ(from));
 		target = xsVectorSet(xsVectorGetX(target) + scale * (xsVectorGetX(from) - xsVectorGetX(target)),0,0);
-	} else if (xsVectorGetZ(target) > (mapSize * 2 + 1)) {
-		scale = (xsVectorGetZ(target) - (mapSize * 2 + 1)) / (xsVectorGetZ(target) - xsVectorGetZ(from));
-		target = xsVectorSet(xsVectorGetX(target) + scale * (xsVectorGetX(from) - xsVectorGetX(target)),0,mapSize * 2 + 1);
+	} else if (xsVectorGetZ(target) > (mapSize * 2 + 2)) {
+		scale = (xsVectorGetZ(target) - (mapSize * 2 + 2)) / (xsVectorGetZ(target) - xsVectorGetZ(from));
+		target = xsVectorSet(xsVectorGetX(target) + scale * (xsVectorGetX(from) - xsVectorGetX(target)),0,mapSize * 2 + 2);
 	}
 	return(target);
 }
@@ -351,6 +353,10 @@ string getCrateProto(int db = 0) {
 		{
 			proto = "Ball of Fire Impact";
 		}
+		case dKnifeCrates:
+		{
+			proto = "Healing SFX";
+		}
 	}
 	return(proto);
 }
@@ -364,6 +370,10 @@ vector getCrateScale(int db = 0) {
 			scale = vector(1.5, 1.5, 1.5);
 		}
 		case dExplosiveCrates:
+		{
+			scale = vector(1.0, 1.0, 1.0);
+		}
+		case dKnifeCrates:
 		{
 			scale = vector(1.0, 1.0, 1.0);
 		}
@@ -631,9 +641,40 @@ void switchWeapon(int p = 0) {
 	}
 }
 
+void updateObeliskCircles() {
+	float squaredDist = xsPow(CAMERA_RANGE, 2);
+	for(i=xGetDatabaseCount(dObelisks); >0) {
+		int pointer = xDatabaseNext(dObelisks);
+		bool overlap = false;
+		vector dir = xsVectorSet(CAMERA_RANGE, 0, 0);
+		for(j=xGetInt(dObelisks, xUnitName) + 1; < xGetInt(dObelisks, xObeliskEnd)) {
+			vector pos = xGetVector(dObelisks, xUnitPos) + dir;
+			overlap = false;
+			for(k=xGetDatabaseCount(dObelisks); >1) {
+				xDatabaseNext(dObelisks);
+				if (distanceBetweenVectors(xGetVector(dObelisks, xUnitPos), pos) < squaredDist) {
+					overlap = true;
+					break;
+				}
+			}
+			dir = rotationMatrix(dir, 0.707107, 0.707107);
+			xSetPointer(dObelisks, pointer);
+			trUnitSelectClear();
+			trUnitSelect(""+j, true);
+			if (overlap) {
+				trMutateSelected(kbGetProtoUnitID("Cinematic Block"));
+			} else {
+				trMutateSelected(kbGetProtoUnitID("UI Range Indicator Norse SFX"));
+			}
+		}
+	}
+}
+
 void shootWeapon(int p = 0) {
 	if (trTimeMS() > xGetInt(dPlayerData, xPlayerShootCooldown)) {
 		vector pos = vector(0,0,0);
+		vector dir = vector(0,0,0);
+		float dist = 0;
 		xSetInt(dPlayerData, xPlayerShootCooldown, trTimeMS() + SHOOT_COOLDOWN);
 		int db = xGetInt(dPlayerData, xPlayerWeaponDatabase);
 		if (xGetDatabaseCount(db) > 0) {
@@ -726,6 +767,45 @@ void shootWeapon(int p = 0) {
 						}
 					}
 				}
+				case WEAPON_CAMERA:
+				{
+					xAddDatabaseBlock(dObelisks, true);
+					xSetInt(dObelisks, xUnitName, trGetNextUnitScenarioNameNumber());
+					pos = xGetVector(dUnits, xUnitPos, xGetInt(dPlayerData, xPlayerIndex));
+					dist = distanceBetweenVectors(pos, dir, false);
+					dir = getUnitVector(pos, xGetVector(dPlayerData, xPlayerThrowPos), xsMin(dist, 4.0));
+					pos = vectorSnapToGrid(pos + dir);
+					trArmyDispatch(""+p+",0", "Dwarf", 9, xsVectorGetX(pos), 0, xsVectorGetZ(pos), 0, true);
+
+					xSetInt(dObelisks, xUnitID, kbGetBlockID(""+xGetInt(dObelisks, xUnitName), true));
+					xSetInt(dObelisks, xUnitOwner, p);
+					xSetInt(dObelisks, xObeliskEnd, trGetNextUnitScenarioNameNumber());
+					xSetVector(dObelisks, xUnitPos, pos);
+					xUnitSelectByID(dObelisks, xUnitID);
+					trUnitChangeProtoUnit("Outpost");
+					dir = xsVectorSet(CAMERA_RANGE, 0, 0);
+					for(i=xGetInt(dObelisks, xUnitName) + 1; < xGetInt(dObelisks, xObeliskEnd)) {
+						trUnitSelectClear();
+						trUnitSelect(""+i, true);
+						trMutateSelected(kbGetProtoUnitID("UI Range Indicator Norse SFX"));
+						trSetSelectedUpVector(xsVectorGetX(dir), 0, xsVectorGetZ(dir));
+						dir = rotationMatrix(dir, 0.707107, 0.707107);
+					}
+
+					if (trCurrentPlayer() == p) {
+						trSoundPlayFN("outpost.wav","1",-1,"","");
+					}
+
+					xAddDatabaseBlock(dUnits, true);
+					xSetInt(dUnits, xUnitName, xGetInt(dObelisks, xUnitName));
+					xSetInt(dUnits, xUnitID, xGetInt(dObelisks, xUnitID));
+					xSetInt(dUnits, xUnitOwner, p);
+					xSetBool(dUnits, xUnitLaunched, true);
+					xSetBool(dUnits, xUnitStationary, true);
+					xSetVector(dUnits, xUnitPos, pos);
+
+					updateObeliskCircles();
+				}
 			}
 			xSetInt(db, xWeaponCount, xGetInt(db, xWeaponCount) - 1);
 			if (xGetInt(db, xWeaponCount) == 0) {
@@ -760,7 +840,7 @@ void dash(int p = 0) {
 					pos = dest;
 					trArmyDispatch("0,0","Dwarf",1,xsVectorGetX(dest),0,xsVectorGetZ(dest),0,true);
 					trArmySelect("0,0");
-					trUnitChangeProtoUnit("Arkantos Boost SFX");
+					trUnitChangeProtoUnit("Lightning Sparks");
 				}
 			}
 			step = step * 0.5;
@@ -776,8 +856,9 @@ void dash(int p = 0) {
 			trUnitSelect(""+next, true);
 			trUnitChangeProtoUnit("Dust Medium");
 			displayWeapons(p);
-			if (trCurrentPlayer() == p) {
-				trSoundPlayFN("sphinxteleportout.wav","1",-1,"","");
+			trQuestVarSetFromRand("sound", 1, 5, true);
+			if (trUnitVisToPlayer()) {
+				trSoundPlayFN("lightningstrike"+1*trQuestVarGet("sound")+".wav","1",-1,"","");
 			}
 			for(j=xGetDatabaseCount(dUnits); >0) {
 				xDatabaseNext(dUnits);

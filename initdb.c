@@ -130,10 +130,14 @@ int xSmokeBombDest = 0;
 int frostArray = 0;
 int dFrostCrates = 0;
 int dExplosiveCrates = 0;
+int dKnifeCrates = 0;
 
 int xCrateActive = 0;
 int xCrateTimeout = 0;
 int xCrateUnitsEnd = 0;
+
+int dObelisks = 0;
+int xObeliskEnd = 0;
 
 int dPellets = 0;
 
@@ -288,7 +292,13 @@ highFrequency
 	dExplosiveCrates = initGenericUnit("explosiveCrates");
 	xInitAddInt(dExplosiveCrates, "units");
 
+	dKnifeCrates = initGenericUnit("knifeCrates");
+	xInitAddInt(dKnifeCrates, "units");
+
 	dPellets = initGenericProj("pellets", 2.0);
+
+	dObelisks = initGenericUnit("obelisks");
+	xObeliskEnd = xInitAddInt(dObelisks, "rangeIndicatorsEnd");
 
 	int db = 0;
 	for(p=1; < cNumberPlayers) {

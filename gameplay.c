@@ -78,12 +78,6 @@ highFrequency
 		dir = rotationMatrix(dir, mCos, mSin);
 		pickUpWeapon(p, WEAPON_KNIFE, 5);
 	}
-	trQuestVarSetFromRand("sound", 0, 6.283185, false);
-	angle = trQuestVarGet("sound");
-	mCos = xsCos(angle);
-	mSin = xsSin(angle);
-	vector pos = perlinRoll(perlin, mapSize / 2 * (1.0 + mCos * 0.8), mapSize / 2 * (1.0 + mSin * 0.8), 1, -5.0);
-	spawnCollectible(pos, WEAPON_WILDCARD, 1);
 }
 
 rule gameplay_start
@@ -107,6 +101,13 @@ highFrequency
 	trPlayNextMusicTrack();
 
 	trMessageSetText("Find the Spotlight to become the Wildcard!");
+
+	trQuestVarSetFromRand("rand", 0, 6.283185, false);
+	float angle = trQuestVarGet("rand");
+	float mCos = xsCos(angle);
+	float mSin = xsSin(angle);
+	vector pos = perlinRoll(perlin, mapSize / 2 * (1.0 + mCos * 0.8), mapSize / 2 * (1.0 + mSin * 0.8), 1, -5.0);
+	spawnCollectible(pos, WEAPON_WILDCARD, 1);
 }
 
 int lastTimestamp = 0;
@@ -160,6 +161,7 @@ highFrequency
 				if (trCurrentPlayer() == p) {
 					trCounterAbort("dashes");
 					trCounterAddTime("respawn", 15, 1, "Respawn", -1);
+					uiClearCursor();
 				}
 				if (wildcard == p) {
 					trMessageSetText("The Wildcard has been dropped! Treasure locations have been reset!");
@@ -568,7 +570,7 @@ highFrequency
 				start = vectorToGrid(pos);
 				if (xsVectorGetX(pos) < 0 || xsVectorGetZ(pos) < 0 || xsVectorGetX(pos) > (2.0 * mapSize) || xsVectorGetZ(pos) > (2.0 * mapSize)) {
 					break;
-				} else if ((terrainIsType(start, TERRAIN_WALL, TERRAIN_WALL_SUB) == false) && (getPerlinNoise(perlin, xsVectorGetX(start), xsVectorGetZ(start)) < wallHeight)) {
+				} else if ((terrainIsType(start, TERRAIN_WALL, TERRAIN_WALL_SUB) == false) && (getPerlinNoise(perlin, xsVectorGetX(start), xsVectorGetZ(start)) < wallHeight - 1.0)) {
 					hit = true;
 					break;
 				}
@@ -824,7 +826,7 @@ highFrequency
 		trQuestVarSetFromRand("rand", 1, mapSize, true);
 		y = trQuestVarGet("rand");
 
-		trQuestVarSetFromRand("rand", dFrostCrates, dExplosiveCrates, true);
+		trQuestVarSetFromRand("rand", dFrostCrates, dKnifeCrates, true);
 		val = trQuestVarGet("rand");
 
 		spawnCrate(perlinRoll(perlin, x, y, 1.0, -1.0), val, getCrateProto(val), getCrateScale(val));
@@ -926,6 +928,37 @@ highFrequency
 		}
 	}
 
+	for(i=xGetDatabaseCount(dKnifeCrates); >0) {
+		xDatabaseNext(dKnifeCrates);
+		xUnitSelectByID(dKnifeCrates, xUnitID);
+		if (trUnitPercentDamaged() > 0) {
+			trUnitSelectClear();
+			trUnitSelect(""+(1 + xGetInt(dKnifeCrates, xUnitName)), true);
+			trDamageUnitPercent(100);
+			trUnitChangeProtoUnit("Meteorite");
+			trUnitSelectClear();
+			trUnitSelect(""+(2 + xGetInt(dKnifeCrates, xUnitName)), true);
+			trUnitChangeProtoUnit("Fireball Launch Damage Effect");
+			xUnitSelectByID(dKnifeCrates, xUnitID);
+			if (trUnitVisToPlayer()) {
+				trSoundPlayFN("siegetowerdeath.wav","1",-1,"","");
+			}
+			trUnitChangeProtoUnit("Fireball Launch Damage Effect");
+			// shoot projectiles in all directions
+			prev = gridToVector(xGetVector(dKnifeCrates, xUnitPos));
+			dir = vector(2,0,0);
+			xFreeDatabaseBlock(dKnifeCrates);
+
+			spawnCollectible(prev, WEAPON_KNIFE, 1);
+			trQuestVarSetFromRand("rand", 2, 4, true);
+			for(j=trQuestVarGet("rand"); >0) {
+				spawnCollectible(prev + dir, WEAPON_KNIFE, 1);
+				pos = vectorSetAsTargetVector(prev, dir, 2.0 * mapSize * mapSize);
+				dir = rotationMatrix(dir, 0, 1.0);
+			}
+		}
+	}
+
 	// pellet pos
 	for(i=xGetDatabaseCount(dPellets); >0) {
 		xDatabaseNext(dPellets);
@@ -939,6 +972,20 @@ highFrequency
 			}
 			trUnitChangeProtoUnit("Lightning Sparks ground");
 			xFreeDatabaseBlock(dPellets);
+		}
+	}
+
+	if (xGetDatabaseCount(dObelisks) > 0) {
+		xDatabaseNext(dObelisks, true);
+		xUnitSelectByID(dObelisks, xUnitID);
+		if (trUnitAlive() == false) {
+			for(i=xGetInt(dObelisks, xUnitName) + 1; < xGetInt(dObelisks, xObeliskEnd)) {
+				trUnitSelectClear();
+				trUnitSelect(""+i, true);
+				trUnitDestroy();
+			}
+			xFreeDatabaseBlock(dObelisks);
+			updateObeliskCircles();
 		}
 	}
 

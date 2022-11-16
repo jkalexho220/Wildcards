@@ -4,10 +4,10 @@ const int WEAPON_PORTAL = 3;
 const int WEAPON_TRAP = 4;
 const int WEAPON_SMOKESCREEN = 5;
 const int WEAPON_SWORD = 6;
-const int WEAPON_SNIPER = 7;
-const int WEAPON_CAMERA = 8;
+const int WEAPON_CAMERA = 7;
+const int WEAPON_SNIPER = 8;
 
-const int WEAPON_TYPES = 6;
+const int WEAPON_TYPES = 7;
 
 const int WEAPON_WILDCARD = 99;
 
@@ -40,7 +40,7 @@ string weaponName(int weapon = 0) {
 		}
 		case WEAPON_CAMERA:
 		{
-			name = "Obelisk";
+			name = "Camera";
 		}
 		case WEAPON_SNIPER:
 		{

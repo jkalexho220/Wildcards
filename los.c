@@ -104,6 +104,9 @@ void removeFrontier(int posX = 0, int posY = 0, bool removeEverything = false) {
 	int y = 0;
 	int newX = 0;
 	int newY = 0;
+	if (xGetDatabaseCount(frontier) <= 3) {
+		removeEverything = true;
+	}
 	while(xGetDatabaseCount(frontier) > 0) {
 		current = xDatabaseNext(frontier);
 		x = xGetInt(frontier, xFrontierX);
